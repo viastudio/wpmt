@@ -1,0 +1,368 @@
+# Copyright (C) 2012 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Hyper Cache FR\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/hyper-cache\n"
+"POT-Creation-Date: 2012-01-25 22:02:42+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2012-06-15 18:02+0100\n"
+"Last-Translator: QuentinTurquet.com <quentin.turquet@gmail.com>\n"
+"Language-Team: TradPress.fr <tradpress@gmail.com>\n"
+"X-Poedit-Language: French\n"
+"X-Poedit-Country: FRANCE\n"
+
+#: options.php:92
+msgid "You must add to the file wp-config.php (at its beginning after the &lt;?php) the line of code: <code>define('WP_CACHE', true);</code>."
+msgstr "Vous devez ajouter au fichier wp-config (au début après le &lt;?php) la ligne de code : <code>define('WP_CACHE', true);</code>."
+
+#: options.php:103
+msgid "<p><strong>Options saved BUT not active because Hyper Cache was not able to update the file wp-content/advanced-cache.php (is it writable?).</strong></p>"
+msgstr "<p><strong>Les options ont été enregistrées MAIS non actives, car Hyper Cache n'est pas capable de mettre à jour le fichier wp-content/advanced-cache.php (est-il accessible en écriture ?).</strong></p>"
+
+#: options.php:109
+msgid "<p><strong>Hyper Cache was not able to create the folder \"wp-content/cache/hyper-cache\". Make it manually setting permissions to 777.</strong></p>"
+msgstr "<p><strong>Hyper Cache n'est pas capable de créer le dossier \"wp-content/cache/hyper-cache\". Mettez manuellement les permissions en CHMOD 777.</strong></p>"
+
+#: options.php:114
+msgid "You can find more details about configurations and working mode on <a href=\"%s\">Hyper Cache official page</a>."
+msgstr "Vous pouvez trouver plus de détails à propos des configurations sur <a href=\"%s\">la page officielle Hyper Cache</a>."
+
+#: options.php:123
+msgid "Clear cache"
+msgstr "Nettoyer le cache"
+
+#: options.php:126
+msgid "Cache status"
+msgstr "Statut du cache"
+
+#: options.php:129
+msgid "Files in cache (valid and expired)"
+msgstr "Fichiers en cache (valides et expirés)"
+
+#: options.php:133
+msgid "Cleaning process"
+msgstr "Procédure de nettoyage"
+
+#: options.php:135
+msgid "Next run on: "
+msgstr "Prochaine mise à jour le :"
+
+#: options.php:142
+msgid "The cleaning process runs hourly and it's ok to run it hourly: that grant you an efficient cache. If above there is not a valid next run time, wait 10 seconds and reenter this panel. If nothing change, try to deactivate and reactivate Hyper Cache."
+msgstr "Le processus de nettoyage fonctionne toutes les heures et est actif pour fonctionner à chaque heure : cela garantie un cache efficace. Si, ci-dessus, le temps entré pour le prochain fonctionnement n'est pas valide, attendez 10 secondes et réentrez-le dans le panel. Si rien ne change, essayez de désactiver et de réactiver Hyper Cache."
+
+#: options.php:149
+msgid "Configuration"
+msgstr "Configuration"
+
+#: options.php:154
+msgid "Cached pages timeout"
+msgstr "Pages en cache (temps écoulé)"
+
+#: options.php:157
+msgid "minutes"
+msgstr "minutes"
+
+#: options.php:159
+msgid ""
+"Minutes a cached page is valid and served to users. A zero value means a cached page is\r\n"
+"        valid forever."
+msgstr ""
+"Les minutes d'une page mise en cache sont valides et servies aux utilisateurs. Une valeur nulle signifie qu'une page mise en cache est\r\n"
+"        valide pour toujours."
+
+#: options.php:161
+msgid ""
+"If a cached page is older than specified value (expired) it is no more used and\r\n"
+"        will be regenerated on next request of it."
+msgstr ""
+"Si une page mise en cache est plus ancienne que la valeur spécifiée (expirée) Ce n'est plus utilisé et\r\n"
+"        sera de nouveau générée lors de la requête suivante."
+
+#: options.php:163
+msgid "720 minutes is half a day, 1440 is a full day and so on."
+msgstr "720 minutes est la moitié d'une journée, 1440 est un jour entier."
+
+#: options.php:169
+msgid "Cache invalidation mode"
+msgstr "Mode invalide du cache"
+
+#: options.php:172
+msgid "All cached pages"
+msgstr "Toutes les pages en cache"
+
+#: options.php:173
+msgid "Only modified posts"
+msgstr "Seulement les articles modifiés"
+
+#: options.php:174
+msgid "Only modified pages"
+msgstr "Seulement les pages modifiées"
+
+#: options.php:175
+msgid "Nothing"
+msgstr "Rien"
+
+#: options.php:179
+msgid "Invalidate home, archives, categories on single post invalidation"
+msgstr "Invalider l'accueil, archives, catégories sur les articles invalidés."
+
+#: options.php:182
+msgid "\"Invalidation\" is the process of deleting cached pages when they are no more valid."
+msgstr "\"Invalidation\" est un processus de suppression des pages mises en cache lorsqu'elles ne sont plus valides."
+
+#: options.php:183
+msgid ""
+"Invalidation process is started when blog contents are modified (new post, post update, new comment,...) so\r\n"
+"        one or more cached pages need to be refreshed to get that new content."
+msgstr ""
+"Le processus d'invalidation est mis en marche lorsque le contenu du blog est modifié (nouvel article, mise à jour d'un article, commentaire,...) donc\r\n"
+"        une ou plusieurs pages mises en chage doivent être rafraîchies pour afficher le nouveau contenu."
+
+#: options.php:185
+msgid ""
+"A new comment submission or a comment moderation is considered like a post modification\r\n"
+"        where the post is the one the comment is relative to."
+msgstr ""
+"La soumission d'un commentaire ou la modération d'un commentaire est considérée comme une modification de l'article\r\n"
+"        où l'article est celui où le commentaire en question se situe."
+
+#: options.php:192
+msgid "Disable cache for commenters"
+msgstr "Désactiver le cache pour les commentaires"
+
+#: options.php:196
+msgid ""
+"When users leave comments, WordPress show pages with their comments even if in moderation\r\n"
+"        (and not visible to others) and pre-fills the comment form."
+msgstr ""
+"Lorsque des utilisateurs laissent des commentaires, WordPress affiche les pages comme si les commentaires étaient en attente de validation\r\n"
+"        (et ne sont pas visibles pour les autres) et pré-rempli le formulaire de commentaire."
+
+#: options.php:198
+msgid "If you want to keep those features, enable this option."
+msgstr "Si vous voulez garder ces fonctions, activez cette option."
+
+#: options.php:199
+msgid "The caching system will be less efficient but the blog more usable."
+msgstr "Le système de cache sera moins efficace, mais le blog plus utilisable."
+
+#: options.php:206
+msgid "Feeds caching"
+msgstr "Fils mis en cache"
+
+#: options.php:210
+msgid "When enabled the blog feeds will be cache as well."
+msgstr "Lorsqu'activé, les fils du blog seront aussi en cache."
+
+#: options.php:211
+msgid ""
+"Usually this options has to be left unchecked but if your blog is rather static,\r\n"
+"        you can enable it and have a bit more efficiency"
+msgstr ""
+"D'habitude ces options doivent rester décochées, mais si votre blog est plutôt statique,\r\n"
+"        vous pouvez l'activer pour gagner un petit peu de rapidité."
+
+#: options.php:218
+#: options.php:256
+#: options.php:297
+#: options.php:449
+msgid "Update"
+msgstr "Mettre à jour"
+
+#: options.php:221
+msgid "Configuration for mobile devices"
+msgstr "Configuration pour les téléphones portables"
+
+#: options.php:234
+msgid "Detect mobile devices"
+msgstr "Détecter les téléphones portables"
+
+#: options.php:238
+msgid "When enabled mobile devices will be detected and the cached page stored under different name."
+msgstr "Lorsqu'un appareil mobile valide sera détecté, la page mise en cache sera stockée sous un nom différent."
+
+#: options.php:239
+msgid "This makes blogs with different themes for mobile devices to work correctly."
+msgstr "Ceci fait des blogs avec des thèmes différents pour permettre à des dispositifs mobiles de fonctionner correctement."
+
+#: options.php:245
+msgid "Mobile agent list"
+msgstr "Liste d'agents de mobile"
+
+#: options.php:249
+msgid "One per line mobile agents to check for when a page is requested."
+msgstr "Un mobile agent par ligne pour vérifier quand la page est demandée."
+
+#: options.php:250
+msgid "The mobile agent string is matched against the agent a device is sending to the server."
+msgstr "La série mobile agent correspond quand l'agent est un dispositif envoyé au serveur."
+
+#: options.php:260
+msgid "Compression"
+msgstr "Compression"
+
+#: options.php:264
+msgid "Your hosting space has not the \"gzencode\" or \"gzinflate\" function, so no compression options are available."
+msgstr "Votre hébergeur ne possède pas la fonction \"gzencode\" ou \"gzinflate\", donc aucune option de compression n'est disponible."
+
+#: options.php:270
+msgid "Enable compression"
+msgstr "Activer la compression"
+
+#: options.php:274
+msgid "When possible the page will be sent compressed to save bandwidth."
+msgstr "Quand cela est possible, la page sera envoyée compressée pour préserver la bande passante."
+
+#: options.php:275
+msgid ""
+"Only the textual part of a page can be compressed, not images, so a photo\r\n"
+"        blog will consume a lot of bandwidth even with compression enabled."
+msgstr ""
+"Seulement la partie textuelle d'une page peut être compressée, pas les images, donc une photo\r\n"
+"        du blog va consommer beaucoup de bande passante lorsque la compression sera active."
+
+#: options.php:277
+#: options.php:291
+msgid "Leave the options disabled if you note malfunctions, like blank pages."
+msgstr "Laisser cette option désactivée si vous notez des erreurs, comme des pages blanches."
+
+#: options.php:279
+msgid "If you enable this option, the option below will be enabled as well."
+msgstr "Si vous activez cette option, l'option ci-dessous sera aussi activée."
+
+#: options.php:285
+msgid "Disk space usage"
+msgstr "Usage de l'espace disque"
+
+#: options.php:289
+msgid "Enable this option to minimize disk space usage."
+msgstr "Activer cette option pour minimiser l'usage en espace disque."
+
+#: options.php:290
+msgid "The cache will be a little less performant."
+msgstr "Le cache sera un peu moins performant."
+
+#: options.php:302
+msgid "Advanced options"
+msgstr "Options avancées"
+
+#: options.php:306
+msgid "Translation"
+msgstr "Traduction"
+
+#: options.php:310
+msgid "DO NOT show this panel translated."
+msgstr "NE PAS montrer ce panel traduit."
+
+#: options.php:316
+msgid "Disable Last-Modified header"
+msgstr "Désactiver le haut de page Dernier Modifié"
+
+#: options.php:320
+msgid "Disable some HTTP headers (Last-Modified) which improve performances but some one is reporting they create problems which some hosting configurations."
+msgstr "Mettez hors de service quelques en-têtes HTTP (Derniers-modifiés) qui  vaaméliorer le fonctionnement, mais quelqu'un a rapporté que cela crée des problèmes de configurations sur certains hébergements."
+
+#: options.php:326
+msgid "Home caching"
+msgstr "Accueil en cache"
+
+#: options.php:330
+msgid "DO NOT cache the home page so it is always fresh."
+msgstr "NE PAS mettre en cache la page d'accueil si elle est toujours mise à jour."
+
+#: options.php:336
+msgid "Redirect caching"
+msgstr "Redirection en cache"
+
+#: options.php:340
+msgid "Cache WordPress redirects."
+msgstr "Redirections Cache WordPress."
+
+#: options.php:341
+msgid "WordPress sometime sends back redirects that can be cached to avoid further processing time."
+msgstr "WordPress renvoie parfois en arrière ce qui peut être mis en cache pour éviter un nouveau temps de traitement."
+
+#: options.php:346
+msgid "Page not found caching (HTTP 404)"
+msgstr "Page mise en cache non trouvée (HTTP 404)"
+
+#: options.php:369
+msgid "URL with parameters"
+msgstr "URL avec paramètres"
+
+#: options.php:373
+msgid "Cache requests with query string (parameters)."
+msgstr "Requête en cache avec query string (paramétrages)."
+
+#: options.php:374
+msgid "This option has to be enabled for blogs which have post URLs with a question mark on them."
+msgstr "Cette option peut être activée pour les blogs qui ont des points d'interrogation dans leurs URLs."
+
+#: options.php:375
+msgid ""
+"This option is disabled by default because there is plugins which use\r\n"
+"        URL parameter to perform specific action that cannot be cached"
+msgstr ""
+"Cette option est désactivée par défaut car quelques extensions peuvent utiliser\r\n"
+"        le paramétrage d'URL pour des actions spécifiques qui ne peuvent être mises en cache"
+
+#: options.php:377
+msgid ""
+"For who is using search engines friendly permalink format is safe to\r\n"
+"        leave this option disabled, no performances will be lost."
+msgstr ""
+"Pour celui qui utilise un moteur de recherche utilisant les permaliens doit\r\n"
+"        laisser cette option désactivée, aucune performance ne sera perdue."
+
+#: options.php:392
+msgid "URI to reject"
+msgstr "URI à rejeter"
+
+#: options.php:396
+msgid "Write one URI per line, each URI has to start with a slash."
+msgstr "Ecrire un URI par ligne, chaque URI doit commencer par un slash."
+
+#: options.php:397
+msgid "A specified URI will match the requested URI if the latter starts with the former."
+msgstr "Un URI spécifié correspondra à une requête URI si le nouveau démarre avec l'ancien."
+
+#: options.php:398
+msgid "If you want to specify a stric matching, surround the URI with double quotes."
+msgstr "Si vous voulez spécifier une correspondance de stric, entourer l'URI de doubles guillemets."
+
+#: options.php:418
+msgid "Agents to reject"
+msgstr "Agents à rejeter"
+
+#: options.php:422
+msgid "Write one agent per line."
+msgstr "Ecrire un agent par ligne."
+
+#: options.php:423
+msgid "A specified agent will match the client agent if the latter contains the former. The matching is case insensitive."
+msgstr "Un agent spécifié correspondra au client agent si le dernier contient l'ancien. La correspondance est insensible à la case."
+
+#: options.php:429
+msgid "Cookies matching"
+msgstr "Correspondance des cookies"
+
+#: options.php:433
+msgid "Write one cookie name per line."
+msgstr "Ecrire un nom de cookie par ligne."
+
+#: options.php:434
+msgid "When a specified cookie will match one of the cookie names sent bby the client the cache stops."
+msgstr "Lorsqu'un cookie spécifié correspondra à l'un des noms de cookies envoyé par le client, le cache se stoppe."
+
+#: options.php:437
+msgid ""
+"It seems you have Facebook Connect plugin installed. Add this cookie name to make it works\r\n"
+"        with Hyper Cache:"
+msgstr ""
+"Il semblerait que vous avez l'extension Facebook Connect installée. Ajoutez ce nom de cookie pour le faire fonctionner\r\n"
+"        avec Hyper Cache :"
+
