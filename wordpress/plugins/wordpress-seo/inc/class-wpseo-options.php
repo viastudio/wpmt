@@ -1379,6 +1379,7 @@ if ( ! class_exists( 'WPSEO_Option_Titles' ) ) {
 			'title_test'             => 0,
 			// Form fields
 			'forcerewritetitle'      => false,
+			'separator'              => 'sc-dash',
 			'hide-feedlinks'         => false,
 			'hide-rsdlink'           => false,
 			'hide-shortlink'         => false,
@@ -1453,7 +1454,24 @@ if ( ! class_exists( 'WPSEO_Option_Titles' ) ) {
 			'forcerewritetitle',
 		);
 
-
+		/**
+		 * @var array Array of the separator options. To get these options use WPSEO_Option_Titles::get_instance()->get_separator_options()
+		 */
+		private $separator_options = array(
+			'sc-dash'    => '-',
+			'sc-ndash'   => '&ndash;',
+			'sc-mdash'   => '&mdash;',
+			'sc-middot'  => '&middot;',
+			'sc-bull'    => '&bull;',
+			'sc-star'    => '*',
+			'sc-smstar'  => '&#8902;',
+			'sc-pipe'    => '|',
+			'sc-tilde'   => '~',
+			'sc-laquo'   => '&laquo;',
+			'sc-raquo'   => '&raquo;',
+			'sc-lt'      => '&lt;',
+			'sc-gt'      => '&gt;',
+		);
 
 		/**
 		 * Add the actions and filters for the option
@@ -1492,6 +1510,26 @@ if ( ! class_exists( 'WPSEO_Option_Titles' ) ) {
 			return self::$instance;
 		}
 
+		/**
+		 * Get the available separator options
+		 *
+		 * @return array
+		 */
+		public function get_separator_options() {
+			$separators = $this->separator_options;
+
+			/**
+			 * Allow altering the array with separator options
+			 * @api  array  $separator_options  Array with the separator options
+			 */
+			$filtered_separators = apply_filters( 'wpseo_separator_options', $separators );
+
+			if ( is_array( $filtered_separators ) && $filtered_separators !== array() ) {
+				$separators = array_merge( $separators, $filtered_separators );
+			}
+
+			return $separators;
+		}
 
 		/**
 		 * Translate strings used in the option defaults
@@ -1635,6 +1673,19 @@ if ( ! class_exists( 'WPSEO_Option_Titles' ) ) {
 						}
 						break;
 
+					/* Separator field - Radio */
+					case 'separator':
+						if ( isset( $dirty[ $key ] ) && $dirty[ $key ] !== '' ) {
+
+							// Get separator fields
+							$separator_fields = $this->get_separator_options();
+
+							// Check if the given separator is exists
+							if ( isset( $separator_fields[ $dirty[ $key ] ] ) ) {
+								$clean[ $key ] = $dirty[ $key ];
+							}
+						}
+						break;
 
 					/* boolean fields */
 					case 'forcerewritetitle':
@@ -2188,7 +2239,7 @@ if ( ! class_exists( 'WPSEO_Option_InternalLinks' ) ) {
 
 			$post_types = get_post_types( array( 'public' => true ), 'objects' );
 
-			if ( get_option( 'show_on_front' ) == 'page' ) {
+			if ( get_option( 'show_on_front' ) == 'page' && get_option( 'page_for_posts' ) > 0 ) {
 				$allowed_post_types[] = 'post';
 			}
 
@@ -2538,6 +2589,7 @@ if ( ! class_exists( 'WPSEO_Option_Social' ) ) {
 			// Form fields:
 			'facebook_site'      => '', // text field
 			'og_default_image'   => '', // text field
+			'og_frontpage_title' => '', // text field
 			'og_frontpage_desc'  => '', // text field
 			'og_frontpage_image' => '', // text field
 			'opengraph'          => true,
@@ -2701,42 +2753,9 @@ if ( ! class_exists( 'WPSEO_Option_Social' ) ) {
 
 					/* text fields */
 					case 'og_frontpage_desc':
+					case 'og_frontpage_title':
 						if ( isset( $dirty[ $key ] ) && $dirty[ $key ] !== '' ) {
 							$clean[ $key ] = self::sanitize_text_field( $dirty[ $key ] );
-						}
-						break;
-
-
-					/* url text fields - ftp allowed */
-					case 'og_default_image':
-					case 'og_frontpage_image':
-						if ( isset( $dirty[ $key ] ) && $dirty[ $key ] !== '' ) {
-							$url = self::sanitize_url( $dirty[ $key ], array( 'http', 'https', 'ftp', 'ftps' ) );
-							if ( $url !== '' ) {
-								$clean[ $key ] = $url;
-							} else {
-								if ( isset( $old[ $key ] ) && $old[ $key ] !== '' ) {
-									$url = self::sanitize_url( $old[ $key ], array( 'http', 'https', 'ftp', 'ftps' ) );
-									if ( $url !== '' ) {
-										$clean[ $key ] = $url;
-									}
-								}
-								if ( function_exists( 'add_settings_error' ) ) {
-									$url = self::sanitize_url( $dirty[ $key ], array(
-											'http',
-											'https',
-											'ftp',
-											'ftps',
-										) );
-									add_settings_error(
-										$this->group_name, // slug title of the setting
-										'_' . $key, // suffix-id for the error message box
-										sprintf( __( '%s does not seem to be a valid url. Please correct.', 'wordpress-seo' ), '<strong>' . esc_html( $url ) . '</strong>' ), // the error message
-										'error' // error type, either 'error' or 'updated'
-									);
-								}
-							}
-							unset( $url );
 						}
 						break;
 
@@ -2744,7 +2763,9 @@ if ( ! class_exists( 'WPSEO_Option_Social' ) ) {
 					/* url text fields - no ftp allowed */
 					case 'facebook_site':
 					case 'plus-publisher':
-						if ( isset( $dirty[ $key ] ) && $dirty[ $key ] !== '' ) {
+					case 'og_default_image':
+					case 'og_frontpage_image':
+					if ( isset( $dirty[ $key ] ) && $dirty[ $key ] !== '' ) {
 							$url = self::sanitize_url( $dirty[ $key ] );
 							if ( $url !== '' ) {
 								$clean[ $key ] = $url;
