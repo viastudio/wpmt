@@ -341,7 +341,6 @@ class GFEntryDetail{
                         <div class="inside">
                             <div id="submitcomment" class="submitbox">
                                 <div id="minor-publishing" style="padding:10px;">
-                                    <br/>
                                     <?php _e("Entry Id", "gravityforms"); ?>: <?php echo absint($lead["id"]) ?><br/><br/>
                                     <?php _e("Submitted on", "gravityforms"); ?>: <?php echo esc_html(GFCommon::format_date($lead["date_created"], false, "Y/m/d")) ?>
                                     <br/><br/>
@@ -851,10 +850,10 @@ class GFEntryDetail{
                             <td colspan="2" class="entry-view-field-value lastrow">
                                 <table class="entry-products" cellspacing="0" width="97%">
                                     <colgroup>
-                                          <col class="entry-products-col1">
-                                          <col class="entry-products-col2">
-                                          <col class="entry-products-col3">
-                                          <col class="entry-products-col4">
+                                          <col class="entry-products-col1" />
+                                          <col class="entry-products-col2" />
+                                          <col class="entry-products-col3" />
+                                          <col class="entry-products-col4" />
                                     </colgroup>
                                     <thead>
                                         <th scope="col"><?php echo apply_filters("gform_product_{$form_id}", apply_filters("gform_product", __("Product", "gravityforms"), $form_id), $form_id) ?></th>
@@ -964,28 +963,41 @@ class GFEntryDetail{
             <div class="inside">
                 <div id="submitcomment" class="submitbox">
                     <div id="minor-publishing" style="padding:10px;">
-                        <br/>
                         <?php
-                        if (!empty($lead["payment_status"])) {
-                            echo __("Status", "gravityforms"); ?>: <span
-                                id="gform_payment_status"><?php echo apply_filters("gform_payment_status", $lead["payment_status"], $form, $lead) ?></span>
-                            <br/><br/>
-                            <?php
+							if (!empty($lead["payment_status"])) {
+							?>
+								<div id="gf_payment_status" class="gf_payment_detail">
+								<?php
+									echo __("Status", "gravityforms"); ?>: <span id="gform_payment_status"><?php echo apply_filters("gform_payment_status", $lead["payment_status"], $form, $lead)
+								?></span>
+								</div>
+
+							<?php
                             if (!empty($lead["payment_date"])) {
-                                echo $lead["transaction_type"] == 2 ? __("Start Date", "gravityforms") : __("Date", "gravityforms") ?>: <?php echo GFCommon::format_date($lead["payment_date"], false, "Y/m/d", $lead["transaction_type"] != 2) ?>
-                                <br/><br/>
+								?>
+								<div id="gf_payment_date" class="gf_payment_detail">
+									<?php
+                                	echo $lead["transaction_type"] == 2 ? __("Start Date", "gravityforms") : __("Date", "gravityforms") ?>: <?php echo GFCommon::format_date($lead["payment_date"], false, "Y/m/d", $lead["transaction_type"] != 2)
+                                	?>
+								</div>
                             <?php
                             }
 
                             if (!empty($lead["transaction_id"])) {
+								?>
+								<div id="gf_payment_transaction_id" class="gf_payment_detail">
+								<?php
                                 echo $lead["transaction_type"] == 2 ? __("Subscription Id", "gravityforms") : __("Transaction Id", "gravityforms"); ?>: <?php echo $lead["transaction_id"] ?>
-                                <br/><br/>
+                                </div>
                             <?php
                             }
 
                             if (!rgblank($lead["payment_amount"])) {
+								?>
+								<div id="gf_payment_amount" class="gf_payment_detail">
+									<?php
                                 echo $lead["transaction_type"] == 2 ? __("Recurring Amount", "gravityforms") : __("Amount", "gravityforms"); ?>: <?php echo GFCommon::to_money($lead["payment_amount"], $lead["currency"]) ?>
-                                <br/><br/>
+                                </div>
                             <?php
                             }
                         }
