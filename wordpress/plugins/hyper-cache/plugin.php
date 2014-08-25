@@ -4,7 +4,7 @@
   Plugin Name: Hyper Cache
   Plugin URI: http://www.satollo.net/plugins/hyper-cache
   Description: A simple and efficient cache. More on <a href="http://www.satollo.net/plugins/hyper-cache" target="_blank">Hyper Cache</a> official page.
-  Version: 3.0.1
+  Version: 3.0.2
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
@@ -89,16 +89,19 @@ class HyperCache {
         if (!isset($this->options['reject_cookies'])) $this->options['reject_cookies'] = array();
         if (!isset($this->options['reject_uris'])) $this->options['reject_uris'] = array();
         if (!isset($this->options['reject_uris_exact'])) $this->options['reject_uris_exact'] = array();
-        
+        if (!isset($this->options['clean_last_posts'])) $this->options['clean_last_posts'] = 0;
+
         if (!isset($this->options['theme'])) $this->options['theme'] = '';
 
+        if (!isset($this->options['browser_cache_hours'])) $this->options['browser_cache_hours'] = 24;
+
         update_option('hyper-cache', $this->options);
-        
+
         @wp_mkdir_p(WP_CONTENT_DIR . '/cache/hyper-cache');
 
         if (is_file(WP_CONTENT_DIR . '/advanced-cache.php'))
             $this->build_advanced_cache();
-        
+
         if (!wp_next_scheduled('hyper_cache_clean')) {
             wp_schedule_event(time()+300, 'hourly', 'hyper_cache_clean');
         }
@@ -143,9 +146,14 @@ class HyperCache {
         $advanced_cache = str_replace('HC_MAX_AGE', $this->options['max_age'], $advanced_cache);
         $advanced_cache = str_replace('HC_REJECT_COMMENT_AUTHORS', isset($this->options['reject_comment_authors']) ? 1 : 0, $advanced_cache);
 
+        $advanced_cache = str_replace('HC_BROWSER_CACHE_HOURS', $this->options['browser_cache_hours'], $advanced_cache);
+        $advanced_cache = str_replace('HC_BROWSER_CACHE', isset($this->options['browser_cache']) ? 1 : 0, $advanced_cache);
+
+        $advanced_cache = str_replace('HC_HTTPS', isset($this->options['https']) ? 1 : 0, $advanced_cache);
+
         return file_put_contents(WP_CONTENT_DIR . '/advanced-cache.php', $advanced_cache);
     }
-    
+
 
     function hook_bbp_new_reply($reply_id) {
         $topic_id = bbp_get_reply_topic_id($reply_id);
@@ -328,12 +336,12 @@ class HyperCache {
         // The home
         @unlink($dir . '/index.html');
         @unlink($dir . '/index.html.gz');
-        @unlink($dir . '/index-user.html');
-        @unlink($dir . '/index-user.html.gz');
+        @unlink($dir . '/index-https.html');
+        @unlink($dir . '/index-https.html.gz');
         @unlink($dir . '/index-mobile.html');
         @unlink($dir . '/index-mobile.html.gz');
-        @unlink($dir . '/index-mobile-user.html');
-        @unlink($dir . '/index-mobile-user.html.gz');
+        @unlink($dir . '/index-https-mobile.html');
+        @unlink($dir . '/index-https-mobile.html.gz');
 
         $this->remove_dir($dir . '/feed/');
         // Home subpages
@@ -345,6 +353,17 @@ class HyperCache {
         if (empty($base))
             $base = 'category';
         $this->remove_dir($dir . '/' . $base . '/');
+
+        $permalink_structure = get_option('permalink_structure');
+        error_log(substr($permalink_structure, 0, 11));
+        if (substr($permalink_structure, 0, 11) == '/%category%') {
+            $categories = get_categories();
+            error_log(print_r($categories, true));
+            foreach ($categories as &$category) {
+                error_log('Removing: ' . $dir . '/' . $category->slug . '/');
+                $this->remove_dir($dir . '/' . $category->slug . '/');
+            }
+        }
 
         $base = get_option('tag_base');
         if (empty($base))
@@ -364,18 +383,20 @@ class HyperCache {
     }
 
     function remove_dir($dir) {
+        $dir = trailingslashit($dir);
         $files = glob($dir . '*', GLOB_MARK);
         if (!empty($files)) {
             foreach ($files as &$file) {
                 if (substr($file, -1) == DIRECTORY_SEPARATOR)
                     $this->remove_dir($file);
-                else
+                else {
                     @unlink($file);
+                }
             }
         }
         @rmdir($dir);
     }
-    
+
     function hook_hyper_cache_clean() {
         //error_log('hook_hyper_cache_clean');
         $this->remove_older_than(time() - $this->options['max_age']*3600);
@@ -449,13 +470,17 @@ function hyper_cache_callback($buffer) {
 
     $lc_group = '';
 
+    if (isset($options['https']) && hyper_cache_is_ssl()) {
+        $lc_group .= '-https';
+    }
+
     if (HyperCache::$instance->is_mobile()) {
-        // Bypass
+        // Bypass (should no need since there is that control on advanced-cache.php)
         if ($options['mobile'] == 2)
             return $buffer;
         // Use the cache
         if ($options['mobile'] == 1)
-            $lc_group = '-mobile';
+            $lc_group .= '-mobile';
     }
 
     if (is_404()) {
