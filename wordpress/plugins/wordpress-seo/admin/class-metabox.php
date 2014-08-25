@@ -253,8 +253,13 @@ if ( ! class_exists( 'WPSEO_Metabox' ) ) {
 					global $post;
 				}
 
-				$this->calculate_results( $post );
-				$score = self::get_value( 'linkdex' );
+				$score   = '';
+				$results = $this->calculate_results( $post );
+				if ( ! is_wp_error( $results ) && isset( $results['total'] ) ) {
+					$score = $results['total'];
+					unset( $results );
+				}
+
 				if ( $score === '' ) {
 					$score_label = 'na';
 					$title       = __( 'No focus keyword set.', 'wordpress-seo' );
@@ -1293,7 +1298,11 @@ if ( ! class_exists( 'WPSEO_Metabox' ) ) {
 			}
 			$score = wpseo_calc( wpseo_calc( $overall, '/', $overall_max ), '*', 100, true );
 
-			self::set_value( 'linkdex', absint( $score ), $post->ID );
+			if ( ! is_wp_error( $score ) ) {
+				self::set_value( 'linkdex', absint( $score ), $post->ID );
+
+				$results['total'] = $score;
+			}
 
 			return $results;
 		}
@@ -1588,7 +1597,7 @@ if ( ! class_exists( 'WPSEO_Metabox' ) ) {
 					if ( $dom_object->attributes->getNamedItem( 'href' ) ) {
 						$href  = $dom_object->attributes->getNamedItem( 'href' )->textContent;
 						$wpurl = get_bloginfo( 'url' );
-						if ( substr( $href, 0, 1 ) == '/' || substr( $href, 0, strlen( $wpurl ) ) == $wpurl ) {
+						if ( wpseo_is_url_relative( $href ) === true || substr( $href, 0, strlen( $wpurl ) ) === $wpurl ) {
 							$type = 'internal';
 						} elseif ( substr( $href, 0, 4 ) == 'http' ) {
 							$type = 'external';

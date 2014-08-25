@@ -68,12 +68,21 @@ if (!empty($_COOKIE)) {
 }
 
 $hc_group = '';
+
+if (HC_HTTPS && hyper_cache_is_ssl()) {
+    $hc_group .= '-https';
+}
+
 if (hyper_cache_is_mobile()) {
 // Bypass
-    if (HC_MOBILE == 2)
+    if (HC_MOBILE == 2) {
+        $cache_stop = true;
         return false;
-    $hc_group = '-mobile';
+    }
+    $hc_group .= '-mobile';
 }
+
+
 
 //$hc_file = ABSPATH . 'wp-content/cache/lite-cache' . $_SERVER['REQUEST_URI'] . '/index' . $hc_group . '.html';
 $hc_uri = hyper_cache_sanitize_uri($_SERVER['REQUEST_URI']);
@@ -115,7 +124,25 @@ if (HC_MOBILE == 0) {
 } else {
     header('Vary: Accept-Encoding,User-Agent');
 }
-header('Cache: must-revalidate');
+
+if (HC_BROWSER_CACHE) {
+    if (HC_BROWSER_CACHE_HOURS != 0) {
+        $hc_cache_max_age = HC_BROWSER_CACHE_HOURS * 3600;
+    } else {
+        // If there is not a default expire time, use 24 hours.
+        if (HC_MAX_AGE > 0) {
+            $hc_cache_max_age = time() + (HC_MAX_AGE * 3600) - $hc_file_time;
+        } else {
+            $hc_cache_max_age = time() + (24 * 3600) - $hc_file_time;
+        }
+    }
+    header('Cache-Control: max-age=' . $hc_cache_max_age);
+    header('Expires: ' . gmdate("D, d M Y H:i:s", time() + $hc_cache_max_age) . " GMT");
+} else {
+    header('Cache-Control: must-revalidate');
+    header('Pragma: no-cache');
+}
+
 header('X-Hyper-Cache: hit' . $hc_group);
 if ($hc_gzip) {
     header('Content-Encoding: gzip');
@@ -145,4 +172,17 @@ function hyper_cache_is_mobile() {
     if (defined('IS_PHONE'))
         return IS_PHONE;
     return preg_match('#(HC_MOBILE_AGENTS)#i', strtolower($_SERVER['HTTP_USER_AGENT']));
+}
+
+// From WordPress!
+function hyper_cache_is_ssl() {
+	if ( isset($_SERVER['HTTPS']) ) {
+		if ( 'on' == strtolower($_SERVER['HTTPS']) )
+			return true;
+		if ( '1' == $_SERVER['HTTPS'] )
+			return true;
+	} elseif ( isset($_SERVER['SERVER_PORT']) && ( '443' == $_SERVER['SERVER_PORT'] ) ) {
+		return true;
+	}
+	return false;
 }

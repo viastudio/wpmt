@@ -15,7 +15,23 @@ jQuery(document).ready(function($){
     if(typeof form != 'undefined')
         window.gfMergeTags = new gfMergeTagsObj(form);
 
+	$(document).ready(function(){
+		$(".gform_currency").bind("change", function(){
+			FormatCurrency(this);
+		}).each(function(){
+			FormatCurrency(this);
+		});
+	});
+
 });
+
+function FormatCurrency(element){
+	if(gf_vars.gf_currency_config){
+		var currency = new Currency(gf_vars.gf_currency_config);
+		var price = currency.toMoney(jQuery(element).val());
+		jQuery(element).val(price);
+	}
+}
 
 function ToggleConditionalLogic(isInit, objectType){
     var speed = isInit ? "" : "slow";
@@ -106,6 +122,10 @@ function CreateConditionalLogic(objectType, obj){
     var i, rule;
     for(i=0; i < obj.conditionalLogic.rules.length; i++){
         rule = obj.conditionalLogic.rules[i];
+		console.log(obj);
+		console.log(obj.conditionalLogic);
+		console.log(rule);
+
         str += "<div width='100%' class='gf_conditional_logic_rules_container'>";
         str += GetRuleFields(objectType, i, rule.fieldId);
         str += GetRuleOperators(objectType, i, rule.fieldId, rule.operator);
