@@ -15,8 +15,13 @@ if ($controls->is_action('save')) {
     if (!empty($controls->options['folder']))
         $controls->options['folder'] = untrailingslashit($controls->options['folder']);
 
-    if (!is_numeric($controls->options['max_age']))
+    if (!is_numeric($controls->options['max_age'])) {
         $controls->options['max_age'] = 24;
+    }
+
+    if (!is_numeric($controls->options['browser_cache_hours'])) {
+        $controls->options['browser_cache_hours'] = 0;
+    }
 
     // Mobile Agents
     $controls->options['mobile_agents'] = strtolower(trim($controls->options['mobile_agents']));
@@ -61,9 +66,9 @@ if ($controls->is_action('save')) {
     }
 
     update_option('hyper-cache', $controls->options);
-    
-    $controls->messages = __('Options saved.', 'hyper-cache');
-    
+
+    $controls->messages = __('Options saved. If you changes any of the bypasses empty the cache.', 'hyper-cache');
+
     $plugin->options = $controls->options;
     $r = $plugin->build_advanced_cache();
 
@@ -89,21 +94,25 @@ if ($controls->is_action('clean-home')) {
     $folder = $plugin->get_folder() . '/' . $home;
     @unlink($folder . '/index.html');
     @unlink($folder . '/index.html.gz');
+    @unlink($folder . '/index-https.html');
+    @unlink($folder . '/index-https.html.gz');
     @unlink($folder . '/index-mobile.html');
     @unlink($folder . '/index-mobile.html.gz');
-    @unlink($folder . '/index-mobile-user.html');
-    @unlink($folder . '/index-mobile-user.html.gz');
+    @unlink($folder . '/index-https-mobile.html');
+    @unlink($folder . '/index-https-mobile.html.gz');
     @unlink($folder . '/robots.txt');
     $plugin->remove_dir($folder . '/feed/');
     $plugin->remove_dir($folder . '/page/');
     $base = get_option('category_base');
-    if (empty($base))
+    if (empty($base)) {
         $base = 'category';
+    }
     $plugin->remove_dir($folder . '/' . $base . '/');
 
     $base = get_option('tag_base');
-    if (empty($base))
+    if (empty($base)) {
         $base = 'tag';
+    }
     $plugin->remove_dir($folder . '/' . $base . '/');
 
     $plugin->remove_dir($folder . '/type/');
@@ -151,7 +160,7 @@ if ($controls->is_action('import')) {
         $controls->options['mobile_agents'] = $plugin->text_to_list($old_options['mobile_agents']);
 
         update_option('hyper-cache', $controls->options);
-        
+
         $controls->messages = 'Old options imported, now review them and save.';
     }
 }
@@ -159,11 +168,13 @@ if ($controls->is_action('import')) {
 function hc_size($dir) {
     $files = glob($dir . '*', GLOB_MARK);
     $size = 0;
-    foreach ($files as &$file) {
-        if (substr($file, -1) == '/')
-            $size += hc_size($file);
-        else
-            $size += @filesize($file);
+    if (count($files)) {
+        foreach ($files as &$file) {
+            if (substr($file, -1) == '/')
+                $size += hc_size($file);
+            else
+                $size += @filesize($file);
+        }
     }
     return $size;
 }
@@ -235,9 +246,9 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
 
 
         <p>
-            Please, refer to the <a href="http://www.satollo.net/plugins/hyper-cache" target="_blank">official page</a> 
+            Please, refer to the <a href="http://www.satollo.net/plugins/hyper-cache" target="_blank">official page</a>
             and the <a href="http://www.satollo.net/forums/forum/hyper-cache" target="_blank">official forum</a> for support.
-            
+
             <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5PHGDGNHAYLJ8" target="_blank"><img style="vertical-align: bottom" src="http://www.satollo.net/images/donate.png"></a>
             Even <b>2$</b> helps! (<a href="http://www.satollo.net/donations" target="_blank">read more</a>)
         </p>
@@ -319,6 +330,33 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             </p>
                         </td>
                     </tr>
+                    <tr valign="top">
+                        <th><?php _e('Allow browser caching', 'hyper-cache'); ?></th>
+                        <td>
+                            <?php $controls->checkbox('browser_cache', 'enable it'); ?>
+
+                            with an expire time of <?php $controls->text('browser_cache_hours', 5); ?> hours
+                            <p class="description">
+                                When enabled Hyper Cache sends a signal to the browser allowing it to NOT request a page more than once and
+                                to use the copy it has in the local cache. If you set an expire time greater than zero, the browser should keep the copy
+                                for that amount of hours, otherwise Hyper Cache will tell the browser to keep the copy until the page expire in the blog
+                                cache.<br>
+                                Usually I keep this feature disabled.
+                            </p>
+                        </td>
+                    </tr>
+                    <!--
+                    <tr valign="top">
+                        <th><?php _e('HTTPS separated cache', 'hyper-cache'); ?></th>
+                        <td>
+                            <?php $controls->checkbox('https', 'Enable'); ?>
+                            <p class="description">
+                                Enable a separated cache for HTTPS traffic. Usually this is good to avoid noticies about
+                                unsecure resources when the browser loads images, CSS, Javascript.
+                            </p>
+                        </td>
+                    </tr>
+                    -->
                 </table>
 
             </div>
@@ -343,7 +381,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                                 not found page overload you blog since WordPress must generate a full page so caching it help in reduce that overload.
                             </p>
                         </td>
-                    </tr>                    
+                    </tr>
                     <tr>
                         <th><?php _e('Do not cache the blog main feeds', 'hyper-cache'); ?></th>
                         <td>
@@ -371,8 +409,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_uris_exact_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_uris_exact'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. Those URIs are exactly matched. For example if you add the 
-                                <code>/my-single-post</code> URI and a request is received for 
+                                <?php _e('One per line', 'hyper-cache'); ?>. Those URIs are exactly matched. For example if you add the
+                                <code>/my-single-post</code> URI and a request is received for
                                 <code>http://youblog.com<strong>/my-single-post</strong></code> that page
                                 is not cached. A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code>
                                 IS cached.
@@ -385,8 +423,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_uris_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_uris'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. Those URIs match is a requested URI starts with one of them. For example if you add the 
-                                <code>/my-single-post</code> URI and a request is received for 
+                                <?php _e('One per line', 'hyper-cache'); ?>. Those URIs match is a requested URI starts with one of them. For example if you add the
+                                <code>/my-single-post</code> URI and a request is received for
                                 <code>http://youblog.com<strong>/my-single-post</strong></code> that page
                                 IS cached. A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code>
                                 IS cached as well.
@@ -403,18 +441,18 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                                 values, the cache is bypassed.
                             </p>
                         </td>
-                    </tr>  
+                    </tr>
                     <tr>
                         <th><?php _e('Agents to bypass', 'hyper-cache'); ?></th>
                         <td>
                             <?php $controls->checkbox('reject_agents_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_agents'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. If the visitor has a device with a user agent 
+                                <?php _e('One per line', 'hyper-cache'); ?>. If the visitor has a device with a user agent
                                 named as one of the listed values, the cache is bypassed.
                             </p>
                         </td>
-                    </tr>          
+                    </tr>
 
                     <tr>
                         <th><?php _e('Don\'t serve cached pages to comment authors', 'hyper-cache'); ?></th>
@@ -423,7 +461,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
 
                             <p class="description">
                                 Hyper Cache is able to work with users who left a comment and completes the comment form with
-                                user data even on cached page (with a small JavaScript added at the end of the pages). 
+                                user data even on cached page (with a small JavaScript added at the end of the pages).
                                 But the "awaiting moderation" message cannot be shown. If you
                                 have few commentators, you can disable this feature to get back the classical WordPress
                                 comment flow.
@@ -476,7 +514,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->textarea('mobile_agents'); ?>
                             <?php $controls->button('reset_mobile_agents', 'Reset'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. 
+                                <?php _e('One per line', 'hyper-cache'); ?>.
                                 A "user agent" is a text which identify the kind of device used
                                 to surf the site. For example and iPhone has <code>iphone</code> as
                                 user agent.
@@ -490,7 +528,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
         </div>
         <p>
             <?php $controls->button('save', __('Save', 'hyper-cache')); ?>
-            
+
             <?php if ($_SERVER['HTTP_HOST'] == 'www.satollo.net' || $_SERVER['HTTP_HOST'] == 'www.satollo.com') { ?>
             <?php $controls->button('delete', 'Delete options'); ?>
             <?php $controls->button('autoclean', 'Autoclean'); ?>
