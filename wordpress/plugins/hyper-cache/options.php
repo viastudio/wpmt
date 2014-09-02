@@ -219,7 +219,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
     <?php if (@filemtime(WP_CONTENT_DIR . '/advanced-cache.php') < @filemtime(dirname(__FILE__) . '/advanced-cache.php')) { ?>
         <div class="error">
             <p>
-                You must save the options since some files must be updated.
+                <?php _e('You must save the options since some files must be updated.', 'hyper-cache'); ?>
             </p>
         </div>
     <?php } ?>
@@ -227,14 +227,25 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
     <?php if (!is_dir($plugin->get_folder())) { ?>
         <div class="error">
             <p>
-                Hyper Cache was not able to create or find the <code><?php $plugin->get_folder(); ?></code> folder, please
-                create it manually with list, write and read permissions (usually 777).
+                <?php 
+                printf(__('Hyper Cache was not able to create or find the %s folder.', 'hyper-cache'),  
+                    '<code>' . $plugin->get_folder() . '</code>'); 
+                _e('Please create it manually with list, write and read permissions (usually 777).', 'hyper-cache');
+                ?>
+      
             </p>
         </div>
     <?php } ?>
 
     <?php if (get_option('permalink_structure') == '') { ?>
-        <div class="error"><p>You should choose a different <a href="options-permalink.php" target="_blank">permalink structure under the Permalink panel</a> otherwise Hyper Cache cannot work properly.</p></div>
+        <div class="error">
+            <p>
+                 <?php 
+                _e('You should choose a different permalink structure.', 'hyper-cache');
+                _e('Change it on the <a href="options-permalink.php" target="_blank">permalink panel</a> otherwise Hyper Cache cannot work properly.', 'hyper-cache'); 
+                ?>
+            </p>
+        </div>
     <?php } ?>
 
 
@@ -277,6 +288,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('translation_disabled', 'Disable'); ?>
                             <p class="description">
+                                <!-- Do not translate that -->
                                 If you want to see this panel with the original labels, you can disable the
                                 tranlsation.
                             </p>
@@ -295,8 +307,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('gzip'); ?>
 
                             <p class="description">
-                                If you note odd characters when enabled, disable it since your server is already
-                                compressing the pages.
+                                <?php _e('If you note odd characters when enabled, disable it since your server is already
+                                compressing the pages.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -305,7 +317,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->text('clean_last_posts', 5); ?> latest post
                             <p class="description">
-                                The number of latest posts to invalidate when the home is invalidated.
+                                <?php _e('The number of latest posts to invalidate when the home is invalidated.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -326,7 +338,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php echo (int)((wp_next_scheduled('hyper_cache_clean')-time())/60) ?> minutes
                             <p class="description">
-                                The autoclean process removes old files to save disk space.
+                                <?php _e('The autoclean process removes old files to save disk space.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -368,7 +380,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('reject_home'); ?>
                             <p class="description">
-                                When active, the home page and its subpages are not cached. Works even with a static home page.
+                                <?php _e('When active, the home page and its subpages are not cached.', 'hyper-cache'); ?>
+                                <?php _e('Works even with a static home page.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -377,8 +390,9 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('reject_404'); ?>
                             <p class="description">
-                                When active, Hyper Cache does not serve a cached 404 not found page. Requests which lead to a 404
-                                not found page overload you blog since WordPress must generate a full page so caching it help in reduce that overload.
+                                <?php _e('When active, Hyper Cache does not serve a cached "404 not found" page.', 'hyper-cache'); ?>
+                                <?php _e('Requests which lead to a 404 not found page overload you blog since WordPress must generate a full page', 'hyper-cache'); ?>
+                                <?php _e('Caching it help in reduce that overload.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -387,8 +401,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('reject_feeds'); ?>
                             <p class="description">
-                                When active, the main blog feed (<code><?php echo get_option('home'); ?>/feed</code>)
-                                is not cached.
+                                <?php printf(__('When active, the main blog feed %s is not cached.', 'hyper-cache'), 
+                                        '(<code>' . get_option('home') . '/feed</code>)'); ?>
                             </p>
                         </td>
                     </tr>
@@ -397,9 +411,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('reject_comment_feeds'); ?>
                             <p class="description">
-                                When active, the single post comment feed
-                                is not cached. Usually I enable this reject since it saves disk space and comment feed on
-                                single posts are not usually used.
+                                <?php _e('When active, the single post comment feeds are not cached.', 'hyper-cache'); ?>
+                                <?php _e('Usually I enable this bypass since it saves disk space and comment feed on single posts are not usually used.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -409,11 +422,10 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_uris_exact_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_uris_exact'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. Those URIs are exactly matched. For example if you add the
-                                <code>/my-single-post</code> URI and a request is received for
-                                <code>http://youblog.com<strong>/my-single-post</strong></code> that page
-                                is not cached. A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code>
-                                IS cached.
+                                <?php _e('One per line.', 'hyper-cache'); ?> 
+                                <?php _e('Those URIs are exactly matched.', 'hyper-cache'); ?> 
+                                <?php _e('For example if you add the <code>/my-single-post</code> URI and a request is received for <code>http://youblog.com<strong>/my-single-post</strong></code> that page IS NOT cached.', 'hyper-cache'); ?>
+                                <?php _e('A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code> IS cached.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -423,11 +435,11 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_uris_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_uris'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. Those URIs match is a requested URI starts with one of them. For example if you add the
-                                <code>/my-single-post</code> URI and a request is received for
-                                <code>http://youblog.com<strong>/my-single-post</strong></code> that page
-                                IS cached. A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code>
-                                IS cached as well.
+                                <?php _e('One per line.', 'hyper-cache'); ?> 
+                                <?php _e('Those URIs match if a requested URI starts with one of them.', 'hyper-cache'); ?> 
+                                <?php _e('For example if you add the <code>/my-single-post</code> URI and a request is received for <code>http://youblog.com<strong>/my-single-post</strong></code> that page IS NOT cached.', 'hyper-cache'); ?> 
+                                
+                                <?php _e('A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code> IS NOT cached as well.', 'hyper-cache'); ?> 
                             </p>
                         </td>
                     </tr>
@@ -437,19 +449,19 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_cookies_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_cookies'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. If the visitor has a cookie named as one of the listed
-                                values, the cache is bypassed.
+                                <?php _e('One per line.', 'hyper-cache'); ?>
+                                <?php _e('If the visitor has a cookie named as one of the listed values, the cache is bypassed.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
                     <tr>
-                        <th><?php _e('Agents to bypass', 'hyper-cache'); ?></th>
+                        <th><?php _e('Devices (user agents) to bypass', 'hyper-cache'); ?></th>
                         <td>
                             <?php $controls->checkbox('reject_agents_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_agents'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>. If the visitor has a device with a user agent
-                                named as one of the listed values, the cache is bypassed.
+                                <?php _e('One per line.', 'hyper-cache'); ?> 
+                                <?php _e('If the visitor has a device with a user agent named as one of the listed values, the cache is bypassed.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -460,11 +472,11 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_comment_authors', __('Enable', 'hyper-cache')); ?>
 
                             <p class="description">
-                                Hyper Cache is able to work with users who left a comment and completes the comment form with
-                                user data even on cached page (with a small JavaScript added at the end of the pages).
-                                But the "awaiting moderation" message cannot be shown. If you
-                                have few commentators, you can disable this feature to get back the classical WordPress
-                                comment flow.
+                                <?php _e('Hyper Cache is able to work with users who left a comment and completes the comment form with
+                                user data even on cached page', 'hyper-cache'); ?> 
+                                <?php _e('(with a small JavaScript added at the end of the pages).', 'hyper-cache'); ?> 
+                                <?php _e('But the "awaiting moderation" message cannot be shown.', 'hyper-cache'); ?>
+                                <?php _e('If you have few readers who comment you can disable this feature to get back the classical WordPress comment flow.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -473,8 +485,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->text('reject_old_posts', 5); ?> days
                             <p class="description">
-                                Older posts won't be cached and stored resulting in a lower disk space usage. Useful when older posts
-                                have low traffic.
+                                <?php _e('Older posts won\'t be cached and stored resulting in a lower disk space usage.', 'hyper-cache'); ?> 
+                                <?php _e('Useful when older posts have low traffic.', 'hyper-cache'); ?> 
                             </p>
                         </td>
                     </tr>
@@ -486,9 +498,12 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Working mode', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->select('mobile', array(0 => '[disabled] Do not detect mobile devices', 1 => '[enabled] Detect mobile devices and use a separate cache', 2 => '[enabled] Detect mobile devices and bypass the cache')); ?>
+                            <?php $controls->select('mobile', array(0 => __('[disabled] Do not detect mobile devices', 'hyper-cache'), 
+                                1 => __('[enabled] Detect mobile devices and use a separate cache', 'hyper-cache'), 
+                                2 => __('[enabled] Detect mobile devices and bypass the cache', 'hyper-cache'))); ?>
+                            
                             <p class="description">
-                                It make sense to disable the cache for mobile devices when their traffic is very low.
+                                <?php _e('It make sense to disable the cache for mobile devices when their traffic is very low.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -503,8 +518,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             ?>
                             <?php $controls->select('theme', $list); ?>
                             <p class="description">
-                                Even if the active blog theme is used for mobile devices, if some plugins create different content/layout for mobile
-                                devices so you MUST set the caching option to "use a separate cache".
+                                <?php _e('If you have plugins which produce different content for desktop and mobile devices, you should use a separate cache for mobile.', 'hyper-cache'); ?>
+                                <?php _e('See for example my <a href="http://www.satollo.net/plugins/header-footer" target="_blank">Header and Footer</a> plugin for different desktop/mobile ads injection in posts.', 'hyper-cache'); ?>
                                 </p>
                         </td>
                     </tr>
@@ -514,10 +529,9 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->textarea('mobile_agents'); ?>
                             <?php $controls->button('reset_mobile_agents', 'Reset'); ?>
                             <p class="description">
-                                <?php _e('One per line', 'hyper-cache'); ?>.
-                                A "user agent" is a text which identify the kind of device used
-                                to surf the site. For example and iPhone has <code>iphone</code> as
-                                user agent.
+                                <?php _e('One per line.', 'hyper-cache'); ?>
+                                <?php _e('A "user agent" is a text which identify the kind of device used to surf the site.', 'hyper-cache'); ?>
+                                <?php _e('For example and iPhone has <code>iphone</code> as user agent.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>

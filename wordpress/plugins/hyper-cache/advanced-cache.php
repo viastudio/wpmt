@@ -162,7 +162,7 @@ function hyper_cache_sanitize_uri($uri) {
     if (empty($uri) || $uri[0] != '/') {
         $uri = '/' . $uri;
     }
-    return $uri;
+    return rtrim($uri, '/');
 }
 
 function hyper_cache_is_mobile() {

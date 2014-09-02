@@ -3,8 +3,8 @@
 /*
   Plugin Name: Hyper Cache
   Plugin URI: http://www.satollo.net/plugins/hyper-cache
-  Description: A simple and efficient cache. More on <a href="http://www.satollo.net/plugins/hyper-cache" target="_blank">Hyper Cache</a> official page.
-  Version: 3.0.2
+  Description: A easy to configure and efficient cache to increase the speed of your blog.
+  Version: 3.0.5
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
@@ -36,7 +36,7 @@ class HyperCache {
     var $options;
     static $instance;
 
-    const MOBILE_AGENTS = 'up.browser|up.link|mmp|symbian|smartphone|midp|wap|phone|iphone|ipod|android|xoom';
+    const MOBILE_AGENTS = 'android|iphone|iemobile|up.browser|up.link|mmp|symbian|smartphone|midp|wap|phone|ipod|xoom|blackberry';
 
     function __construct() {
         self::$instance = $this;
@@ -311,22 +311,48 @@ class HyperCache {
             $this->hook_edit_post($comment->comment_post_ID);
         }
     }
+    
+    function post_folder($post_id) {
+        $url = get_permalink($post_id);
+        $parts = parse_url($url);
+        return $parts['host'] . hyper_cache_sanitize_uri($parts['path']);
+    }
+    
+    function remove_page($dir) {
+        $dir = untrailingslashit($dir);
+        @unlink($dir . '/index.html');
+        @unlink($dir . '/index.html.gz');
+        @unlink($dir . '/index-https.html');
+        @unlink($dir . '/index-https.html.gz');
+        @unlink($dir . '/index-mobile.html');
+        @unlink($dir . '/index-mobile.html.gz');
+        @unlink($dir . '/index-https-mobile.html');
+        @unlink($dir . '/index-https-mobile.html.gz');
+
+        $this->remove_dir($dir . '/feed/');
+        // Pagination
+        $this->remove_dir($dir . '/page/');
+    }
 
     function hook_edit_post($post_id) {
-        if ($this->post_id == $post_id)
+        // When someone deletes the advaced-cache.php file
+        if (!function_exists('hyper_cache_sanitize_uri')) {
             return;
+        }
+
+        if ($this->post_id == $post_id) {
+            return;
+        }
 
         $this->post_id = $post_id;
-        $folder = $this->get_folder();
-        $url = get_permalink($post_id);
-        $dir = $folder . '/' . substr($url, strpos($url, '://') + 3) . '/';
+        $folder = trailingslashit($this->get_folder());
+        $dir = $folder . $this->post_folder($post_id);
         $this->remove_dir($dir);
 
         if ($this->options['clean_last_posts'] != 0) {
             $posts = get_posts(array('numberposts' => $this->options['clean_last_posts']));
             foreach ($posts as &$post) {
-                $url = get_permalink($post->ID);
-                $dir = $folder . '/' . substr($url, strpos($url, '://') + 3) . '/';
+                $dir = $folder . $this->post_folder($post_id);
                 $this->remove_dir($dir);
             }
         }
@@ -350,24 +376,26 @@ class HyperCache {
         @unlink($dir . '/robots.txt');
 
         $base = get_option('category_base');
-        if (empty($base))
+        if (empty($base)) {
             $base = 'category';
+        }
         $this->remove_dir($dir . '/' . $base . '/');
 
         $permalink_structure = get_option('permalink_structure');
-        error_log(substr($permalink_structure, 0, 11));
+        //error_log(substr($permalink_structure, 0, 11));
         if (substr($permalink_structure, 0, 11) == '/%category%') {
             $categories = get_categories();
-            error_log(print_r($categories, true));
+            //error_log(print_r($categories, true));
             foreach ($categories as &$category) {
-                error_log('Removing: ' . $dir . '/' . $category->slug . '/');
-                $this->remove_dir($dir . '/' . $category->slug . '/');
+                //error_log('Removing: ' . $dir . '/' . $category->slug . '/');
+                $this->remove_page($dir . '/' . $category->slug);
             }
         }
 
         $base = get_option('tag_base');
-        if (empty($base))
+        if (empty($base)) {
             $base = 'tag';
+        }
         $this->remove_dir($dir . '/' . $base . '/');
 
         $this->remove_dir($dir . '/type/');
@@ -399,6 +427,7 @@ class HyperCache {
 
     function hook_hyper_cache_clean() {
         //error_log('hook_hyper_cache_clean');
+        if ($this->options['max_age'] == 0) return;
         $this->remove_older_than(time() - $this->options['max_age']*3600);
     }
 
