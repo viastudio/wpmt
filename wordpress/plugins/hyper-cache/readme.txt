@@ -55,6 +55,20 @@ the [Hyper Cache official forum](http://www.satollo.net/forums/forum/hyper-cache
 
 == Changelog ==
 
+= 3.0.5 =
+
+* Fixed analysis of URL with commas and dots
+* Improved the categories invalidation with /%category% permalink
+
+= 3.0.4 =
+
+* Help texts fixed
+
+= 3.0.3 =
+
+* Fixed the autoclean when max cached page age is set to 0
+* Changed a little the mobile agent list
+
 = 3.0.2 =
 
 * Added the browser caching option
