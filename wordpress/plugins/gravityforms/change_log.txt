@@ -1,18 +1,26 @@
 -------------------------------------------------------------------------------------------------------------------
-Version 1.8.11.3
-
-	- Fixed issue with multiple file upload merge tag not including a line break when in html format
-
--------------------------------------------------------------------------------------------------------------------
-Version 1.8.11.2
-
-    - Updated chosen js, styles and images to latest version
+Version 1.8.12.2
+	- AF: Fixed issue with payments less than $1.00 not being processed.
 
 -------------------------------------------------------------------------------------------------------------------
-Version 1.8.11.1
+Version 1.8.12.1
+	- Fixed issue with form export/import setting inactive notifications to active
 
-    - Fixed issue with List field markup; more <td> than <col>
-    - Fixed markup validation issue with List Field where label for attribute did not match a valid input
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.12
+    - Added PHP version of the "gform_calculation_result" filter.
+        add_filter( 'gform_calculation_result', 'my_calc_result', 10, 5 );
+        function my_calc_result( $result, $formula, $field, $form, $entry ) {
+            // modify result as needed
+            return $result;
+        }
+    - Updated chosen js, styles and images to latest version.
+	- Fixed issue with multiple file upload merge tag not including a line break when in html format.
+    - Fixed issue with List field markup; more <td> than <col>.
+    - Fixed markup validation issue with List Field where label for attribute did not match a valid input.
+	- AF: Fixed issue with simple_condition() function/feature creating javascript errors.
+	- AF: Added a check in the maybe_process_callback function to see if the callback has been aborted to prevent processing for the Payment Add-On.
+	- API: Added GFAPI::get_forms() method.
 
 -------------------------------------------------------------------------------------------------------------------
 Version 1.8.11

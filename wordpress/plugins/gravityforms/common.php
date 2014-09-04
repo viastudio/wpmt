@@ -5332,6 +5332,7 @@ class GFCommon{
         }
 
         $result = preg_match( '/^[0-9 -\/*\(\)]+$/', $formula ) ? eval( "return {$formula};" ) : false;
+        $result = apply_filters( 'gform_calculation_result', $result, $formula, $field, $form, $lead );
 
         return $result;
     }
