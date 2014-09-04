@@ -1870,14 +1870,13 @@ abstract class GFAddOn {
     protected function simple_condition($setting_name_root){
 
         $conditional_fields = $this->get_conditional_logic_fields();
-        $create_condition_value_script = "";
 
         $str = $this->settings_select(array(
                                     "name" => "{$setting_name_root}_field_id",
                                     "type" => "select",
                                     "choices" => $conditional_fields,
                                     "class" => "optin_select",
-                                    "onchange" => "jQuery('#" . esc_attr($setting_name_root) . "_container').html(GetRuleValues('gf_setting', 0, jQuery(this).val(), '', '_gaddon_setting_" . esc_attr($setting_name_root) . "_value'));"
+                                    "onchange" => "jQuery('#" . esc_attr($setting_name_root) . "_container').html(GetRuleValues('simple_condition_{$setting_name_root}', 0, jQuery(this).val(), '', '_gaddon_setting_" . esc_attr($setting_name_root) . "_value'));"
                                 ), false);
 
         $str .= $this->settings_select(array(
@@ -1920,8 +1919,22 @@ abstract class GFAddOn {
         $field_id = $this->get_setting("{$setting_name_root}_field_id");
 
         if(!empty($field_id)){
-            $current_condition_value = $this->get_setting("{$setting_name_root}_value");
-            $str .= "<script type='text/javascript'>jQuery(document).ready(function(){jQuery('#" . esc_attr($setting_name_root) . "_container').html(GetRuleValues('gf_setting', 0, {$field_id}, '" . esc_attr($current_condition_value) . "', '_gaddon_setting_" . esc_attr($setting_name_root) . "_value'));});</script>";
+            $value = $this->get_setting("{$setting_name_root}_value");
+			$operator = $this->get_setting("{$setting_name_root}_operator");
+
+            $str .= "<script type='text/javascript'>
+				var " . esc_attr($setting_name_root) . "_object = {'conditionalLogic':{'rules':[{'fieldId':'{$field_id}','operator':'{$operator}','value':'" . esc_attr($value) . "'}]}};
+
+            	jQuery(document).ready(
+            		function(){
+            			gform.addFilter( 'gform_conditional_object', 'SimpleConditionObject' );
+
+            			jQuery('#" . esc_attr($setting_name_root) . "_container').html(
+            				GetRuleValues('simple_condition_{$setting_name_root}', 0, {$field_id}, '" . esc_attr($value) . "', '_gaddon_setting_" . esc_attr($setting_name_root) . "_value'));
+            			}
+            	);
+
+            	</script>";
         }
         return $str;
     }

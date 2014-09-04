@@ -196,7 +196,7 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 		$submission_data = $this->get_submission_data( $feed, $form, $entry );
 
 		//Do not process payment if payment amount is 0 or less
-		if ( intval( $submission_data['payment_amount'] ) <= 0 ) {
+		if ( floatval( $submission_data['payment_amount'] ) <= 0 ) {
 
 			$this->log_debug( 'Payment amount is $0.00 or less. Not sending to payment gateway.' );
 
@@ -659,7 +659,7 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
         if(is_wp_error( $callback_action )) {
             $this->display_callback_error($callback_action);
         }
-        else if($callback_action && is_array( $callback_action ) && rgar( $callback_action, 'type' ) ) {
+        else if($callback_action && is_array( $callback_action ) && rgar( $callback_action, 'type' ) && ! rgar($callback_action, 'abort_callback') ) {
 
             $result = $this->process_callback_action( $callback_action );
 
