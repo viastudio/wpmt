@@ -740,7 +740,7 @@ function gformInitChosenFields(fieldList, noResultsText){
         var element = jQuery(this);
 
         //only initialize once
-        if( element.is(":visible") && element.siblings(".chzn-container").length == 0 ){
+        if( element.is(":visible") && element.siblings(".chosen-container").length == 0 ){
             var options = gform.applyFilters( 'gform_chosen_options', { no_results_text: noResultsText }, element );
             element.chosen( options );
         }
