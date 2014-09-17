@@ -358,17 +358,29 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         </td>
                     </tr>
                     <!--
-                    <tr valign="top">
-                        <th><?php _e('HTTPS separated cache', 'hyper-cache'); ?></th>
+                    <tr>
+                        <th><?php _e('Remove HTTP/HTTPS', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->checkbox('https', 'Enable'); ?>
+                            <?php $controls->checkbox('remove_protocol', 'Enable'); ?>
                             <p class="description">
-                                Enable a separated cache for HTTPS traffic. Usually this is good to avoid noticies about
-                                unsecure resources when the browser loads images, CSS, Javascript.
+                               If your site uses both HTTP and HTTPS it's better to have page links as 
+                               <code>://www.domain.com/...</code> without the protocol.
                             </p>
                         </td>
                     </tr>
                     -->
+                    
+                    <tr valign="top">
+                        <th><?php _e('HTTPS', 'hyper-cache'); ?></th>
+                        <td>
+                            <?php $controls->select('https', array(0 => __('Bypass the cache', 'hyper-cache'), 
+                                1 => __('Cache separately', 'hyper-cache'), 
+                                2 => __('Use the standard cache (I have HTTP/HTTPS aware pages)', 'hyper-cache'))); ?>
+                            <p class="description">
+                            </p>
+                        </td>
+                    </tr>
+                    
                 </table>
 
             </div>
@@ -498,12 +510,13 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Working mode', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->select('mobile', array(0 => __('[disabled] Do not detect mobile devices', 'hyper-cache'), 
-                                1 => __('[enabled] Detect mobile devices and use a separate cache', 'hyper-cache'), 
-                                2 => __('[enabled] Detect mobile devices and bypass the cache', 'hyper-cache'))); ?>
+                            <?php $controls->select('mobile', array(0 => __('Use the standard cache', 'hyper-cache'), 
+                                1 => __('Cache separately', 'hyper-cache'), 
+                                2 => __('Bypass the cache', 'hyper-cache'))); ?>
                             
                             <p class="description">
-                                <?php _e('It make sense to disable the cache for mobile devices when their traffic is very low.', 'hyper-cache'); ?>
+                                <?php _e('Choose "cache separately" if you produce different content for mobile devices', 'hyper-cache'); ?><br>
+                                <?php _e('See for example my <a href="http://www.satollo.net/plugins/header-footer" target="_blank">Header and Footer</a> plugin for different desktop/mobile ads injection in posts.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -512,15 +525,15 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php
                             $themes = wp_get_themes();
+                            //var_dump($themes);
                             $list = array('' => 'Use the active blog theme');
-                            foreach ($themes as $key => $data)
-                                $list[$key] = $key;
+                            foreach ($themes as $theme)
+                                $list[$theme->stylesheet] = $theme->name;
                             ?>
                             <?php $controls->select('theme', $list); ?>
                             <p class="description">
                                 <?php _e('If you have plugins which produce different content for desktop and mobile devices, you should use a separate cache for mobile.', 'hyper-cache'); ?>
-                                <?php _e('See for example my <a href="http://www.satollo.net/plugins/header-footer" target="_blank">Header and Footer</a> plugin for different desktop/mobile ads injection in posts.', 'hyper-cache'); ?>
-                                </p>
+                            </p>
                         </td>
                     </tr>
                     <tr>
