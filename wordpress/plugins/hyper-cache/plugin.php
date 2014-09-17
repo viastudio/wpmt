@@ -4,22 +4,23 @@
   Plugin Name: Hyper Cache
   Plugin URI: http://www.satollo.net/plugins/hyper-cache
   Description: A easy to configure and efficient cache to increase the speed of your blog.
-  Version: 3.0.5
+  Version: 3.1.0
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
+  Contributors: satollo
  */
 
 if (isset($_GET['cache'])) {
     if ($_GET['cache'] === '0') {
-        setcookie('cache_disable', 1, time() + 3600 * 24 * 365);
+        setcookie('cache_disable', 1, time() + 3600 * 24 * 365, '/');
         $x = strpos($_SERVER['REQUEST_URI'], '?');
         header('Location:' . substr($_SERVER['REQUEST_URI'], 0, $x));
         die();
     }
 
     if ($_GET['cache'] === '1') {
-        setcookie('cache_disable', 1, 0);
+        setcookie('cache_disable', 1, time() - 3600, '/');
         $x = strpos($_SERVER['REQUEST_URI'], '?');
         header('Location:' . substr($_SERVER['REQUEST_URI'], 0, $x));
         die();
@@ -50,14 +51,17 @@ class HyperCache {
         add_action('wp_update_comment_count', array($this, 'hook_wp_update_comment_count'), 1);
         add_action('bbp_new_reply', array($this, 'hook_bbp_new_reply'));
         add_action('bbp_new_topic', array($this, 'hook_bbp_new_topic'));
+
         add_action('hyper_cache_clean', array($this, 'hook_hyper_cache_clean'));
 
         if (!is_admin() && !isset($_COOKIE['cache_disable'])) {
-            if (isset($this->options['mobile']) && $this->options['mobile'] > 0 && !empty($this->options['theme'])) {
+
+            // The function must exists or the advanced-cache.php has been removed
+            global $hyper_cache_is_mobile;
+            if ($hyper_cache_is_mobile && !empty($this->options['theme'])) {
                 add_filter('stylesheet', array($this, 'hook_get_stylesheet'));
                 add_filter('template', array($this, 'hook_get_template'));
             }
-
             add_action('template_redirect', array($this, 'hook_template_redirect'), 0);
         }
 
@@ -85,15 +89,25 @@ class HyperCache {
         if (!isset($this->options['mobile_agents'])) {
             $this->options['mobile_agents'] = explode('|', self::MOBILE_AGENTS);
         }
-        if (!isset($this->options['reject_agents'])) $this->options['reject_agents'] = array();
-        if (!isset($this->options['reject_cookies'])) $this->options['reject_cookies'] = array();
-        if (!isset($this->options['reject_uris'])) $this->options['reject_uris'] = array();
-        if (!isset($this->options['reject_uris_exact'])) $this->options['reject_uris_exact'] = array();
-        if (!isset($this->options['clean_last_posts'])) $this->options['clean_last_posts'] = 0;
+        if (!isset($this->options['reject_agents']))
+            $this->options['reject_agents'] = array();
+        if (!isset($this->options['reject_cookies']))
+            $this->options['reject_cookies'] = array();
+        if (!isset($this->options['reject_uris']))
+            $this->options['reject_uris'] = array();
+        if (!isset($this->options['reject_uris_exact']))
+            $this->options['reject_uris_exact'] = array();
+        if (!isset($this->options['clean_last_posts']))
+            $this->options['clean_last_posts'] = 0;
 
-        if (!isset($this->options['theme'])) $this->options['theme'] = '';
+        if (!isset($this->options['https']))
+            $this->options['https'] = 1;
 
-        if (!isset($this->options['browser_cache_hours'])) $this->options['browser_cache_hours'] = 24;
+        if (!isset($this->options['theme']))
+            $this->options['theme'] = '';
+
+        if (!isset($this->options['browser_cache_hours']))
+            $this->options['browser_cache_hours'] = 24;
 
         update_option('hyper-cache', $this->options);
 
@@ -103,7 +117,7 @@ class HyperCache {
             $this->build_advanced_cache();
 
         if (!wp_next_scheduled('hyper_cache_clean')) {
-            wp_schedule_event(time()+300, 'hourly', 'hyper_cache_clean');
+            wp_schedule_event(time() + 300, 'hourly', 'hyper_cache_clean');
         }
     }
 
@@ -137,7 +151,7 @@ class HyperCache {
         $advanced_cache = str_replace('HC_REJECT_AGENTS_ENABLED', empty($this->options['reject_agents_enabled']) ? 0 : 1, $advanced_cache);
         $advanced_cache = str_replace('HC_REJECT_AGENTS', implode('|', array_map('preg_quote', $this->options['reject_agents'])), $advanced_cache);
 
-        $advanced_cache = str_replace('HC_REJECT_COOKIES_ENABLED', empty($this->options['reject_agents_cookies']) ? 0 : 1, $advanced_cache);
+        $advanced_cache = str_replace('HC_REJECT_COOKIES_ENABLED', empty($this->options['reject_cookies_enabled']) ? 0 : 1, $advanced_cache);
         $advanced_cache = str_replace('HC_REJECT_COOKIES', implode('|', array_map('preg_quote', $this->options['reject_cookies'])), $advanced_cache);
 
 
@@ -149,11 +163,10 @@ class HyperCache {
         $advanced_cache = str_replace('HC_BROWSER_CACHE_HOURS', $this->options['browser_cache_hours'], $advanced_cache);
         $advanced_cache = str_replace('HC_BROWSER_CACHE', isset($this->options['browser_cache']) ? 1 : 0, $advanced_cache);
 
-        $advanced_cache = str_replace('HC_HTTPS', isset($this->options['https']) ? 1 : 0, $advanced_cache);
+        $advanced_cache = str_replace('HC_HTTPS', (int) $this->options['https'], $advanced_cache);
 
         return file_put_contents(WP_CONTENT_DIR . '/advanced-cache.php', $advanced_cache);
     }
-
 
     function hook_bbp_new_reply($reply_id) {
         $topic_id = bbp_get_reply_topic_id($reply_id);
@@ -182,156 +195,18 @@ class HyperCache {
         $this->remove_dir($dir);
     }
 
-    function hook_show_admin_bar($show_admin_bar) {
-        //if (get_current_user_id() == 1) return true;
-        return false;
-    }
-
-    function hook_get_stylesheet($stylesheet = '') {
-        if (!$this->is_mobile())
-            return $stylesheet;
-        $theme = get_theme($this->options['theme']);
-        if ($theme == null)
-            return $stylesheet;
-        return $theme['Stylesheet'];
-    }
-
-    function hook_get_template($template) {
-        if (!$this->is_mobile())
-            return $template;
-        $theme = get_theme($this->options['theme']);
-        if ($theme == null)
-            return $template;
-        return $theme['Template'];
-    }
-
-    function hook_template_redirect() {
-        global $cache_stop, $hyper_cache_stop, $hyper_cache_stop;
-
-        if ($cache_stop || $hyper_cache_stop || $hyper_cache_stop)
-            return;
-
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            return;
-        }
-        if (!empty($_SERVER['QUERY_STRING'])) {
-            return;
-        }
-
-        if (!function_exists('hyper_cache_sanitize_uri'))
-            return;
-
-        if (is_user_logged_in())
-            return;
-
-        // Never cache pages generated for administrator (to be patched to see if the user is an administrator)
-        //if (get_current_user_id() == 1) return;
-
-        if (is_404()) {
-            if (isset($this->options['reject_404']))
-                return;
-
-            $file = $this->get_folder() . '/' . substr(get_option('home'), strpos(get_option('home'), '://') + 3) . '/404.html';
-
-            if (file_exists($file) && ($this->options['max_age'] == 0 || filemtime($file) > time() - $this->options['max_age'] * 3600)) {
-                header('Content-Type: text/html;charset=UTF-8');
-                // For some reason it seems more performant than readfile...
-                header('X-Hyper-Cache: hit');
-                echo file_get_contents($file);
-                die();
-            }
-        }
-
-        if (is_trackback()) {
-            return;
-        }
-
-        // Global feed and global comment feed
-        if (isset($this->options['reject_feeds']) && is_feed()) {
-            return;
-        }
-
-        // Single post/page feed
-        if (isset($this->options['reject_comment_feeds']) && is_comment_feed()) {
-            return;
-        }
-
-        if (isset($this->options['reject_home']) && is_front_page()) {
-            return;
-        }
-
-        if (is_robots()) {
-            return;
-        }
-
-        if (defined('SID') && SID != '') {
-            return;
-        }
-
-        $home_root = parse_url(get_option('home'), PHP_URL_PATH);
-        if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 4) == ($home_root . '/wp-'))
-            return;
-
-        // Compatibility with XML Sitemap 4.x
-        if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 8) == ($home_root . '/sitemap'))
-            return;
-
-        // URLs to reject (exact)
-        if (isset($this->options['reject_uris_exact_enabled'])) {
-            if (is_array($this->options['reject_uris_exact'])) {
-                foreach ($this->options['reject_uris_exact'] as &$uri) {
-                    if ($_SERVER['REQUEST_URI'] == $uri)
-                        return;
-                }
-            }
-        }
-
-        // URLs to reject
-        if (isset($this->options['reject_uris_enabled'])) {
-            if (is_array($this->options['reject_uris'])) {
-                foreach ($this->options['reject_uris'] as &$uri) {
-                    if (strpos($_SERVER['REQUEST_URI'], $uri) === 0)
-                        return;
-                }
-            }
-        }
-
-        if (!empty($this->options['reject_old_posts']) && is_single()) {
-            global $post;
-            if (strtotime($post->post_date_gmt) < time() - 86400 * $this->options['reject_old_posts'])
-                return;
-        }
-
-        ob_start('hyper_cache_callback');
-    }
-
     function hook_comment_post($comment_id, $status) {
         if ($status === 1) {
             $comment = get_comment($comment_id);
             $this->hook_edit_post($comment->comment_post_ID);
         }
     }
-    
-    function post_folder($post_id) {
-        $url = get_permalink($post_id);
-        $parts = parse_url($url);
-        return $parts['host'] . hyper_cache_sanitize_uri($parts['path']);
-    }
-    
-    function remove_page($dir) {
-        $dir = untrailingslashit($dir);
-        @unlink($dir . '/index.html');
-        @unlink($dir . '/index.html.gz');
-        @unlink($dir . '/index-https.html');
-        @unlink($dir . '/index-https.html.gz');
-        @unlink($dir . '/index-mobile.html');
-        @unlink($dir . '/index-mobile.html.gz');
-        @unlink($dir . '/index-https-mobile.html');
-        @unlink($dir . '/index-https-mobile.html.gz');
 
-        $this->remove_dir($dir . '/feed/');
-        // Pagination
-        $this->remove_dir($dir . '/page/');
+    function hook_wp_update_comment_count($post_id) {
+        if ($this->post_id == $post_id) {
+            return;
+        }
+        $this->hook_edit_post($post_id);
     }
 
     function hook_edit_post($post_id) {
@@ -341,6 +216,11 @@ class HyperCache {
         }
 
         if ($this->post_id == $post_id) {
+            return;
+        }
+
+        if (get_post_status($post_id) != 'publish') {
+            //error_log('Not a published post');
             return;
         }
 
@@ -403,14 +283,157 @@ class HyperCache {
         $this->remove_dir($dir . '/' . date('Y') . '/');
     }
 
-    function hook_wp_update_comment_count($post_id) {
-        if ($this->post_id == $post_id) {
+    /*
+     * Runs only if $hyper_cache_is_mobile is true
+     */
+    function hook_get_stylesheet($stylesheet = '') {
+        $theme = wp_get_theme($this->options['theme']);
+        if (!$theme->exists()) {
+            return $stylesheet;
+        }
+        return $theme->stylesheet;
+    }
+
+    /*
+     * Runs only if $hyper_cache_is_mobile is true
+     * 
+     * var WP_Theme $theme
+     */
+    function hook_get_template($template) {
+        $theme = wp_get_theme($this->options['theme']);
+        if (!$theme->exists()) {
+            return $template;
+        }
+        return $theme->template;
+    }
+
+    function hook_template_redirect() {
+        global $cache_stop, $hyper_cache_stop, $hyper_cache_stop;
+
+        if ($cache_stop || $hyper_cache_stop || $hyper_cache_stop) {
             return;
         }
-        $this->hook_edit_post($post_id);
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            return;
+        }
+
+        if (!empty($_SERVER['QUERY_STRING'])) {
+            return;
+        }
+
+        if (is_user_logged_in()) {
+            return;
+        }
+
+        // Never cache pages generated for administrator (to be patched to see if the user is an administrator)
+        //if (get_current_user_id() == 1) return;
+
+        if (is_404()) {
+            if (isset($this->options['reject_404'])) {
+                return;
+            }
+
+            $file = $this->get_folder() . '/' . substr(get_option('home'), strpos(get_option('home'), '://') + 3) . '/404.html';
+
+            if (file_exists($file) && ($this->options['max_age'] == 0 || filemtime($file) > time() - $this->options['max_age'] * 3600)) {
+                header('Content-Type: text/html;charset=UTF-8');
+                // For some reason it seems more performant than readfile...
+                header('X-Hyper-Cache: hit');
+                echo file_get_contents($file);
+                die();
+            }
+        }
+
+        if (is_trackback()) {
+            return;
+        }
+
+        // Global feed and global comment feed
+        if (isset($this->options['reject_feeds']) && is_feed()) {
+            return;
+        }
+
+        // Single post/page feed
+        if (isset($this->options['reject_comment_feeds']) && is_comment_feed()) {
+            return;
+        }
+
+        if (isset($this->options['reject_home']) && is_front_page()) {
+            return;
+        }
+
+        if (is_robots()) {
+            return;
+        }
+
+        if (defined('SID') && SID != '') {
+            return;
+        }
+
+        $home_root = parse_url(get_option('home'), PHP_URL_PATH);
+        if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 4) == ($home_root . '/wp-')) {
+            return;
+        }
+
+        // Compatibility with XML Sitemap 4.x
+        if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 8) == ($home_root . '/sitemap')) {
+            return;
+        }
+
+        // URLs to reject (exact)
+        if (isset($this->options['reject_uris_exact_enabled'])) {
+            if (is_array($this->options['reject_uris_exact'])) {
+                foreach ($this->options['reject_uris_exact'] as &$uri) {
+                    if ($_SERVER['REQUEST_URI'] == $uri)
+                        return;
+                }
+            }
+        }
+
+        // URLs to reject
+        if (isset($this->options['reject_uris_enabled'])) {
+            if (is_array($this->options['reject_uris'])) {
+                foreach ($this->options['reject_uris'] as &$uri) {
+                    if (strpos($_SERVER['REQUEST_URI'], $uri) === 0)
+                        return;
+                }
+            }
+        }
+
+        if (!empty($this->options['reject_old_posts']) && is_single()) {
+            global $post;
+            if (strtotime($post->post_date_gmt) < time() - 86400 * $this->options['reject_old_posts'])
+                return;
+        }
+
+        ob_start('hyper_cache_callback');
+    }
+
+    function post_folder($post_id) {
+        $url = get_permalink($post_id);
+        $parts = parse_url($url);
+        return $parts['host'] . hyper_cache_sanitize_uri($parts['path']);
+    }
+
+    function remove_page($dir) {
+        $dir = untrailingslashit($dir);
+        @unlink($dir . '/index.html');
+        @unlink($dir . '/index.html.gz');
+        @unlink($dir . '/index-https.html');
+        @unlink($dir . '/index-https.html.gz');
+        @unlink($dir . '/index-mobile.html');
+        @unlink($dir . '/index-mobile.html.gz');
+        @unlink($dir . '/index-https-mobile.html');
+        @unlink($dir . '/index-https-mobile.html.gz');
+
+        $this->remove_dir($dir . '/feed/');
+        // Pagination
+        $this->remove_dir($dir . '/page/');
     }
 
     function remove_dir($dir) {
+        //error_log('Removing dir: ' . $dir);
         $dir = trailingslashit($dir);
         $files = glob($dir . '*', GLOB_MARK);
         if (!empty($files)) {
@@ -427,8 +450,9 @@ class HyperCache {
 
     function hook_hyper_cache_clean() {
         //error_log('hook_hyper_cache_clean');
-        if ($this->options['max_age'] == 0) return;
-        $this->remove_older_than(time() - $this->options['max_age']*3600);
+        if ($this->options['max_age'] == 0)
+            return;
+        $this->remove_older_than(time() - $this->options['max_age'] * 3600);
     }
 
     function remove_older_than($time) {
@@ -444,18 +468,12 @@ class HyperCache {
                 else {
                     //error_log($file . ' ' . ($time-filemtime($file)));
                     if (@filemtime($file) < $time) {
-                    //error_log('Removing ' . $file);
-                    @unlink($file);
+                        //error_log('Removing ' . $file);
+                        @unlink($file);
                     }
                 }
             }
         }
-    }
-
-    function is_mobile() {
-        if (function_exists('hyper_cache_is_mobile'))
-            return hyper_cache_is_mobile();
-        return false;
     }
 
     function get_folder() {
@@ -479,8 +497,24 @@ class HyperCache {
 
 }
 
+/*
+  function hyper_cache_remove_protocol($buffer) {
+
+  $buffer = str_ireplace('"http://', '"//', $buffer);
+  $buffer = str_ireplace('\'http://', '\'//', $buffer);
+  return $buffer;
+
+  $parts = parse_url(get_home_url());
+  $buffer = str_ireplace('http://' . $parts['host'], '//' . $parts['host'], $buffer);
+  $buffer = str_ireplace('https://' . $parts['host'], '//' . $parts['host'], $buffer);
+  return $buffer;
+
+  }
+
+ */
+
 function hyper_cache_callback($buffer) {
-    global $cache_stop, $lite_cache, $hyper_cache_stop;
+    global $cache_stop, $lite_cache, $hyper_cache_stop, $hyper_cache_group;
 
     if ($cache_stop || $hyper_cache_stop)
         return $buffer;
@@ -488,10 +522,6 @@ function hyper_cache_callback($buffer) {
         return '';
 
     $uri = hyper_cache_sanitize_uri($_SERVER['REQUEST_URI']);
-    $uri = preg_replace('/\/+/', '/', $uri);
-    if ($uri[0] != '/')
-        $uri = '/' . $uri;
-    $uri = rtrim($uri, '.-_/');
 
     $lc_dir = HyperCache::$instance->get_folder() . '/' . strtolower($_SERVER['HTTP_HOST']) . $uri;
 
@@ -499,23 +529,19 @@ function hyper_cache_callback($buffer) {
 
     $lc_group = '';
 
-    if (isset($options['https']) && hyper_cache_is_ssl()) {
-        $lc_group .= '-https';
-    }
 
-    if (HyperCache::$instance->is_mobile()) {
+    global $hyper_cache_is_mobile;
+    if ($hyper_cache_is_mobile) {
         // Bypass (should no need since there is that control on advanced-cache.php)
-        if ($options['mobile'] == 2)
+        if ($options['mobile'] == 2) {
             return $buffer;
-        // Use the cache
-        if ($options['mobile'] == 1)
-            $lc_group .= '-mobile';
+        }
     }
 
     if (is_404()) {
         $lc_file = HyperCache::$instance->get_folder() . '/' . strtolower($_SERVER['HTTP_HOST']) . '/404.html';
     } else {
-        $lc_file = $lc_dir . '/index' . $lc_group . '.html';
+        $lc_file = $lc_dir . '/index' . $hyper_cache_group . '.html';
 
         if (!is_dir($lc_dir)) {
             wp_mkdir_p($lc_dir);
@@ -561,4 +587,18 @@ function hyper_cache_callback($buffer) {
     }
 
     return $buffer;
+}
+
+if (!function_exists('hyper_cache_sanitize_uri')) {
+
+    function hyper_cache_sanitize_uri($uri) {
+        $uri = preg_replace('/[^a-zA-Z0-9\.\/\-_]+/', '_', $uri);
+        $uri = preg_replace('/\/+/', '/', $uri);
+        $uri = rtrim($uri, '.-_/');
+        if (empty($uri) || $uri[0] != '/') {
+            $uri = '/' . $uri;
+        }
+        return rtrim($uri, '/');
+    }
+
 }
