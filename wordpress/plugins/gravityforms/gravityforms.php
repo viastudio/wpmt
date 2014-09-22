@@ -3,14 +3,14 @@
 Plugin Name: Gravity Forms
 Plugin URI: http://www.gravityforms.com
 Description: Easily create web forms and manage form entries within the WordPress admin.
-Version: 1.8.12.2
+Version: 1.8.16.3
 Author: rocketgenius
 Author URI: http://www.rocketgenius.com
 Text Domain: gravityforms
 Domain Path: /languages
 
 ------------------------------------------------------------------------
-Copyright 2009-2013 Rocketgenius Inc.
+Copyright 2009-2014 Rocketgenius Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ add_action( 'plugins_loaded', array( 'GFForms', 'loaded' ) );
 
 class GFForms {
 
-    public static $version = '1.8.12.2';
+    public static $version = '1.8.16.3';
 
 	public static function loaded(){
 		do_action( 'gform_loaded' );
@@ -1727,8 +1727,8 @@ class GFForms {
     }
 
     public static function get_addon_info($api, $action, $args){
-        if($action == "plugin_information" && empty($api) && !rgempty("rg", $_GET)){
-            $raw_response = GFCommon::post_to_manager("api.php", "op=get_plugin&slug={$args->slug}", $options);
+        if($action == "plugin_information" && empty($api) && $args->slug == 'gravityforms'){
+            $raw_response = GFCommon::post_to_manager("api.php", "op=get_plugin&slug=gravityforms", array());
 
             if ( is_wp_error( $raw_response ) || $raw_response['response']['code'] != 200)
                 return false;
@@ -1899,7 +1899,7 @@ class GFForms {
         if(!is_array($notifications))
             die(__("No notifications have been selected. Please select a notification to be sent.", "gravityforms"));
 
-        if(rgpost('sendTo') && GFCommon::is_invalid_or_empty_email(rgpost('sendTo')))
+        if( ! rgempty( 'sendTo', $_POST ) && ! GFCommon::is_valid_email_list(rgpost('sendTo')))
             die(__("The <strong>Send To</strong> email address provided is not valid.", "gravityforms"));
 
         foreach($leads as $lead_id){
