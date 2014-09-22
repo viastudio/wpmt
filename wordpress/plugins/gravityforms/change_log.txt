@@ -1,13 +1,62 @@
 -------------------------------------------------------------------------------------------------------------------
-Version 1.8.12.2
+Version 1.8.16.3
+
+	- Fixed issue with entry list page payment status drop down containing "Approved" instead of "Paid"
+
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.16.2
+
+    - Updated is_duplicate check to work for "long" values as well
+
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.16.1
+
+    - Fixed issue where setting an input-based field value to empty would fail to save
+
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.16
+
+	- Fixed some strings that weren't localized and added localization context to others
+	- Fixed issue with datepicker to prevent user being returned to start of form when tabbing after selecting a date.
+	- Fixed a notice on the WordPress updates page
+	- Fixed a security issue with the file upload field for some server configurations
+	- Fixed an issue with the file upload file not matching uppercase extensions
+	- Updated POT file
+
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.15
+
+	- Fixed an issue with the multi-file upload field while uploading multiple files all selected at the same time in the file dialog. If one of the uploads fails due to an HTTP error then the next file in the list will appear as 100% complete but it will be removed from the form submission.
+	- AF: Fixed issue with checkboxes no retaining their values
+
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.14
+
+	- Fixed a potential security vulnerability for some servers which could allow code to be parsed via the file upload field.
+	- Fixed a security issue to prevent code injection
+	- Fixed an issue with the file upload field that allows malicious form submissions to bypass the validation for the maximum file size setting.
+
+	- AF: Fixed issue with simple conditional logic
+	- AF: Fixed issue with checkbox fields not supporting custom 'onclick' attributes to be added.
+
+-------------------------------------------------------------------------------------------------------------------
+Version 1.8.13
+
+	- Added additional check plus user feedback for failed multi-file uploads.
+	- Fixed a potential security vulnerability for some server configurations which could allow code to be executed via the file upload field.
+	- Fixed issue with form export/import setting inactive notifications to active.
+	- Fixed issue with resend notification not accepting a list of emails.
+	- Fixed another issue with field label for Name and Address fields.
+	- Fixed issue with field label for Name and Address fields.
+	- Fixed issue causing checkboxes checked by default to be rendered unchecked in certain situations.
+
+	- AF: Fixed another issue with simple_condition() function/feature creating javascript errors.
+	- AF: Fixed get_field_map_fields function to no longer include the text "field_map" in the mapped fields prefix.
 	- AF: Fixed issue with payments less than $1.00 not being processed.
 
 -------------------------------------------------------------------------------------------------------------------
-Version 1.8.12.1
-	- Fixed issue with form export/import setting inactive notifications to active
-
--------------------------------------------------------------------------------------------------------------------
 Version 1.8.12
+
     - Added PHP version of the "gform_calculation_result" filter.
         add_filter( 'gform_calculation_result', 'my_calc_result', 10, 5 );
         function my_calc_result( $result, $formula, $field, $form, $entry ) {
@@ -110,6 +159,7 @@ Version 1.8.10
 
 -------------------------------------------------------------------------------------------------------------------
 Version 1.8.9
+
     - Added "password" to the list of fields which allow HTML input.
     - Added 'gform_field_container' filter to allow modifying the field container markup.
         add_action( 'gform_field_container', 'my_field_container', 10, 6 );
@@ -367,6 +417,7 @@ Version 1.8.5
 
 -------------------------------------------------------------------------------------------------------------------
 Version 1.8.4.1
+
     - Fixed issue with tooltips not working on Add On pages. Included font-awesome.css to Add On pages to fix the issue.
     - Fixed issue where old inputs were not removed when adding new choices via bulk add functionality for Post Custom Fields with a "checkbox" field type
     - Fixed an issue with entry export which may result in an empty export file for forms with a large number of entries
@@ -441,6 +492,7 @@ Version 1.8.4
 
 -------------------------------------------------------------------------------------------------------------------
 Version 1.8.3
+
 	- Added new filter "gform_post_category_choices" to alter post category choices sort order. Both globally and form id + field id specific.
         add_filter("gform_post_category_choices", "set_sort", 10, 3);
         function set_sort($choices, $field, $form_id){
