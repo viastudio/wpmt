@@ -168,7 +168,7 @@ if ($controls->is_action('import')) {
 function hc_size($dir) {
     $files = glob($dir . '*', GLOB_MARK);
     $size = 0;
-    if (count($files)) {
+    if (!empty($files)) {
         foreach ($files as &$file) {
             if (substr($file, -1) == '/')
                 $size += hc_size($file);
@@ -227,12 +227,12 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
     <?php if (!is_dir($plugin->get_folder())) { ?>
         <div class="error">
             <p>
-                <?php 
-                printf(__('Hyper Cache was not able to create or find the %s folder.', 'hyper-cache'),  
-                    '<code>' . $plugin->get_folder() . '</code>'); 
+                <?php
+                printf(__('Hyper Cache was not able to create or find the %s folder.', 'hyper-cache'),
+                    '<code>' . $plugin->get_folder() . '</code>');
                 _e('Please create it manually with list, write and read permissions (usually 777).', 'hyper-cache');
                 ?>
-      
+
             </p>
         </div>
     <?php } ?>
@@ -240,9 +240,9 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
     <?php if (get_option('permalink_structure') == '') { ?>
         <div class="error">
             <p>
-                 <?php 
+                 <?php
                 _e('You should choose a different permalink structure.', 'hyper-cache');
-                _e('Change it on the <a href="options-permalink.php" target="_blank">permalink panel</a> otherwise Hyper Cache cannot work properly.', 'hyper-cache'); 
+                _e('Change it on the <a href="options-permalink.php" target="_blank">permalink panel</a> otherwise Hyper Cache cannot work properly.', 'hyper-cache');
                 ?>
             </p>
         </div>
@@ -363,24 +363,24 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('remove_protocol', 'Enable'); ?>
                             <p class="description">
-                               If your site uses both HTTP and HTTPS it's better to have page links as 
+                               If your site uses both HTTP and HTTPS it's better to have page links as
                                <code>://www.domain.com/...</code> without the protocol.
                             </p>
                         </td>
                     </tr>
                     -->
-                    
+
                     <tr valign="top">
                         <th><?php _e('HTTPS', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->select('https', array(0 => __('Bypass the cache', 'hyper-cache'), 
-                                1 => __('Cache separately', 'hyper-cache'), 
+                            <?php $controls->select('https', array(0 => __('Bypass the cache', 'hyper-cache'),
+                                1 => __('Cache separately', 'hyper-cache'),
                                 2 => __('Use the standard cache (I have HTTP/HTTPS aware pages)', 'hyper-cache'))); ?>
                             <p class="description">
                             </p>
                         </td>
                     </tr>
-                    
+
                 </table>
 
             </div>
@@ -413,7 +413,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('reject_feeds'); ?>
                             <p class="description">
-                                <?php printf(__('When active, the main blog feed %s is not cached.', 'hyper-cache'), 
+                                <?php printf(__('When active, the main blog feed %s is not cached.', 'hyper-cache'),
                                         '(<code>' . get_option('home') . '/feed</code>)'); ?>
                             </p>
                         </td>
@@ -434,8 +434,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_uris_exact_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_uris_exact'); ?>
                             <p class="description">
-                                <?php _e('One per line.', 'hyper-cache'); ?> 
-                                <?php _e('Those URIs are exactly matched.', 'hyper-cache'); ?> 
+                                <?php _e('One per line.', 'hyper-cache'); ?>
+                                <?php _e('Those URIs are exactly matched.', 'hyper-cache'); ?>
                                 <?php _e('For example if you add the <code>/my-single-post</code> URI and a request is received for <code>http://youblog.com<strong>/my-single-post</strong></code> that page IS NOT cached.', 'hyper-cache'); ?>
                                 <?php _e('A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code> IS cached.', 'hyper-cache'); ?>
                             </p>
@@ -447,11 +447,11 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_uris_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_uris'); ?>
                             <p class="description">
-                                <?php _e('One per line.', 'hyper-cache'); ?> 
-                                <?php _e('Those URIs match if a requested URI starts with one of them.', 'hyper-cache'); ?> 
-                                <?php _e('For example if you add the <code>/my-single-post</code> URI and a request is received for <code>http://youblog.com<strong>/my-single-post</strong></code> that page IS NOT cached.', 'hyper-cache'); ?> 
-                                
-                                <?php _e('A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code> IS NOT cached as well.', 'hyper-cache'); ?> 
+                                <?php _e('One per line.', 'hyper-cache'); ?>
+                                <?php _e('Those URIs match if a requested URI starts with one of them.', 'hyper-cache'); ?>
+                                <?php _e('For example if you add the <code>/my-single-post</code> URI and a request is received for <code>http://youblog.com<strong>/my-single-post</strong></code> that page IS NOT cached.', 'hyper-cache'); ?>
+
+                                <?php _e('A request for <code>http://youblog.com<strong>/my-single-post-something</strong></code> IS NOT cached as well.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -472,7 +472,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('reject_agents_enabled', __('Enable', 'hyper-cache')); ?><br>
                             <?php $controls->textarea('reject_agents'); ?>
                             <p class="description">
-                                <?php _e('One per line.', 'hyper-cache'); ?> 
+                                <?php _e('One per line.', 'hyper-cache'); ?>
                                 <?php _e('If the visitor has a device with a user agent named as one of the listed values, the cache is bypassed.', 'hyper-cache'); ?>
                             </p>
                         </td>
@@ -485,8 +485,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
 
                             <p class="description">
                                 <?php _e('Hyper Cache is able to work with users who left a comment and completes the comment form with
-                                user data even on cached page', 'hyper-cache'); ?> 
-                                <?php _e('(with a small JavaScript added at the end of the pages).', 'hyper-cache'); ?> 
+                                user data even on cached page', 'hyper-cache'); ?>
+                                <?php _e('(with a small JavaScript added at the end of the pages).', 'hyper-cache'); ?>
                                 <?php _e('But the "awaiting moderation" message cannot be shown.', 'hyper-cache'); ?>
                                 <?php _e('If you have few readers who comment you can disable this feature to get back the classical WordPress comment flow.', 'hyper-cache'); ?>
                             </p>
@@ -497,8 +497,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->text('reject_old_posts', 5); ?> days
                             <p class="description">
-                                <?php _e('Older posts won\'t be cached and stored resulting in a lower disk space usage.', 'hyper-cache'); ?> 
-                                <?php _e('Useful when older posts have low traffic.', 'hyper-cache'); ?> 
+                                <?php _e('Older posts won\'t be cached and stored resulting in a lower disk space usage.', 'hyper-cache'); ?>
+                                <?php _e('Useful when older posts have low traffic.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -510,10 +510,10 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Working mode', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->select('mobile', array(0 => __('Use the standard cache', 'hyper-cache'), 
-                                1 => __('Cache separately', 'hyper-cache'), 
+                            <?php $controls->select('mobile', array(0 => __('Use the standard cache', 'hyper-cache'),
+                                1 => __('Cache separately', 'hyper-cache'),
                                 2 => __('Bypass the cache', 'hyper-cache'))); ?>
-                            
+
                             <p class="description">
                                 <?php _e('Choose "cache separately" if you produce different content for mobile devices', 'hyper-cache'); ?><br>
                                 <?php _e('See for example my <a href="http://www.satollo.net/plugins/header-footer" target="_blank">Header and Footer</a> plugin for different desktop/mobile ads injection in posts.', 'hyper-cache'); ?>
