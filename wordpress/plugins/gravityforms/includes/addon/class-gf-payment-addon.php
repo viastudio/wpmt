@@ -828,7 +828,7 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
         return true;
     }
 
-    public function complete_payment( $entry, $action ) {
+    public function complete_payment( &$entry, $action ) {
 
 		if ( ! rgar($action, 'payment_status') ) {
             $action['payment_status'] = 'Paid';
@@ -2120,7 +2120,9 @@ class GFPaymentStatsTable extends WP_List_Table {
         if ( empty( $this->_pagination_args ) )
             return;
 
-        extract( $this->_pagination_args, EXTR_SKIP );
+		$total_items = $this->_pagination_args['total_items'];
+		$total_pages = $this->_pagination_args['total_pages'];
+		$per_page = $this->_pagination_args['per_page'];
 
         $output = '<span class="displaying-num">' . sprintf( _n( '1 item', '%s items', $total_items, 'gravityforms' ), number_format_i18n( $total_items ) ) . '</span>';
 
