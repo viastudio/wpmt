@@ -4921,6 +4921,12 @@ class GFCommon{
         return do_shortcode($content);
     }
 
+	public static function spam_enabled( $form_id ) {
+		$spam_enabled = self::akismet_enabled( $form_id ) || has_filter( 'gform_entry_is_spam' ) || has_filter( "gform_entry_is_spam_{$form_id}" );
+
+		return $spam_enabled;
+	}
+
     public static function has_akismet(){
     	$akismet_exists = function_exists('akismet_http_post') || function_exists('Akismet::http_post');
         return $akismet_exists;

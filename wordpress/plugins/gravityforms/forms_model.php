@@ -4464,6 +4464,17 @@ class GFFormsModel {
         return in_array( $field_id, $encrypted_fields );
     }
 
+	public static function delete_password( $entry, $form ) {
+		$password_fields = GFCommon::get_fields_by_type( $form, array( 'password' ) );
+		if ( is_array( $password_fields ) ) {
+			foreach ( $password_fields as $password_field ) {
+				$entry[$password_field['id']] = '';
+			}
+		}
+		GFAPI::update_entry( $entry );
+
+		return $entry;
+	}
 }
 
 class RGFormsModel extends GFFormsModel { }
