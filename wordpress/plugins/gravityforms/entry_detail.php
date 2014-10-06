@@ -401,7 +401,7 @@ class GFEntryDetail{
                                         <?php
                                         switch($lead["status"]){
                                             case "spam" :
-                                                if(GFCommon::akismet_enabled($form['id'])){
+                                                if(GFCommon::spam_enabled($form['id'])){
                                                     ?>
                                                     <a onclick="jQuery('#action').val('unspam'); jQuery('#entry_form').submit()" href="#"><?php _e("Not Spam", "gravityforms") ?></a>
                                                     <?php
@@ -433,9 +433,9 @@ class GFEntryDetail{
                                                     ?>
                                                     <a class="submitdelete deletion" onclick="jQuery('#action').val('trash'); jQuery('#entry_form').submit()" href="#"><?php _e("Move to Trash", "gravityforms") ?></a>
                                                     <?php
-                                                    echo GFCommon::akismet_enabled($form['id']) ? "|" : "";
+                                                    echo GFCommon::spam_enabled($form['id']) ? "|" : "";
                                                 }
-                                                if(GFCommon::akismet_enabled($form['id'])){
+                                                if(GFCommon::spam_enabled($form['id'])){
                                                 ?>
                                                     <a class="submitdelete deletion" onclick="jQuery('#action').val('spam'); jQuery('#entry_form').submit()" href="#"><?php _e("Mark as Spam", "gravityforms") ?></a>
                                                 <?php
