@@ -1,0 +1,73 @@
+/* Variables
+-------------------------------------------------------------- */
+@white: #fff;
+@primary: #000;
+@secondary: #666;
+
+@effra: "effra",sans-serif;
+
+@light: 300;
+@normal: 400;
+@medium: 500;
+@bold: 700;
+
+.at2x(@path, @w, @h) {
+    @highdpi: ~"(-webkit-min-device-pixel-ratio: 1.5), (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (min-resolution: 1.5dppx)";
+    background-image: url(@path);
+    @at2x_path: ~`@{path}.replace(/\.\w+$/, function(match) { return "@2x" + match; })`;
+
+    @media @highdpi {
+        background-image: url("@{at2x_path}");
+        background-size: @w @h;
+    }
+}
+
+.at2x(@path, @w, @h, @device-width) {
+    @highdpi: ~"(max-width:@{device-width}px) and (-webkit-min-device-pixel-ratio: 1.5), (max-width:@{device-width}px) and (min--moz-device-pixel-ratio: 1.5), (max-width:@{device-width}px) and (-o-min-device-pixel-ratio: 3/2), (max-width:@{device-width}px) and (min-resolution: 1.5dppx)";
+    @media (max-width:@device-width) {
+        background-image: url(@path);
+    }
+    @at2x_path: ~`@{path}.replace(/\.\w+$/, function(match) { return "@2x" + match; })`;
+
+    @media @highdpi {
+        background-image: url("@{at2x_path}");
+        background-size: @w @h;
+    }
+}
+
+/* Type
+-------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+h1 {
+    font-size: 2.0em;
+    text-shadow: 0px 1px 1px #fff;
+    font-family: @trajan;
+    letter-spacing: 1.5px;
+}
+h2 {
+    color: @primary;
+    font-size: 1.8em;
+    text-shadow: 0px 1px 1px #fff;
+    font-family: @trajan;
+    letter-spacing: 1.5px;
+}
+
+h3 {
+    color: @primary;
+    font-size:1.6em;
+    text-shadow: 0px 1px 1px #fff;
+    margin-top: .7em;
+    font-family: @trajan;
+    letter-spacing: 1.5px;
+}
+
+p {
+    line-height: 1.5em;
+    font-size: 1.1em;
+    color: #3e2f28;
+    letter-spacing: .5px;
+}
