@@ -6226,8 +6226,10 @@ h2 {
   text-align: center;
 }
 .branding img {
-  margin: 40px;
+  margin: 40px 20px;
 }
+/* Layout
+-------------------------------------------------------------- */
 .topbar {
   height: 10px;
   background: #ff0202;

@@ -4,12 +4,27 @@
 
 /* Variables
 -------------------------------------------------------------- */
+@white: #fff;
+@primary: #000;
+@secondary: #666;
+
+@heading: "effra",sans-serif;
+@body: "effra",sans-serif;
+
+@light: 300;
+@normal: 400;
+@medium: 500;
+@bold: 700;
+
+@btn-default-color: @primary; 
+@btn-default-bg: @primary; 
+@btn-default-border: @primary;
 
 
 /* Typography
 -------------------------------------------------------------- */
 h1, h2, h3 {
-	font-family: "effra",sans-serif;
+	font-family: @heading;
 }
 
 h1 {
@@ -32,11 +47,44 @@ h2 {
 	display:block;
 
 	img {
-		margin: 40px;
+		margin: 40px 20px;
 	}
 }
+
+/* Layout
+-------------------------------------------------------------- */
 
 .topbar {
 	background: #ff0202;
 	height: 10px;
+}
+
+/* Forms
+-------------------------------------------------------------- */
+
+label {
+    font-size: 1em !important;
+    font-weight: @regular !important;
+    }
+
+input, textarea {
+    width: 99.2% !important;
+    border: none;
+    box-shadow: 0px 0px 4px @grey;
+
+    &:focus {
+        }
+}
+
+.btn-default {
+    border: 1px solid @grey;
+    box-shadow: 0px 0px 4px @grey;
+    color: @grey;
+    .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+}
+
+.btn-default:hover {
+        text-decoration: none;
+        background-color: @grey;
+        color: @white;
 }
