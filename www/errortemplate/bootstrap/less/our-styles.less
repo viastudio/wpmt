@@ -4,12 +4,24 @@
 
 /* Variables
 -------------------------------------------------------------- */
+@white: #fff;
+@primary: #ff0202;
+@secondary: #666;
+@black: #ccc;
+
+@heading: "effra",sans-serif;
+@body: "effra",sans-serif;
+
+@light: 300;
+@normal: 400;
+@medium: 500;
+@bold: 700;
 
 
 /* Typography
 -------------------------------------------------------------- */
 h1, h2, h3 {
-	font-family: "effra",sans-serif;
+	font-family: @heading;
 }
 
 h1 {
@@ -32,11 +44,39 @@ h2 {
 	display:block;
 
 	img {
-		margin: 40px;
+		margin: 40px 20px;
 	}
 }
 
+/* Layout
+-------------------------------------------------------------- */
+
 .topbar {
-	background: #ff0202;
+	background: @primary;
 	height: 10px;
+}
+
+/* Forms
+-------------------------------------------------------------- */
+
+input, textarea {
+    border: 2px solid @black;
+    box-shadow: 0px 0px 4px @black;
+    color: @black;
+    padding: 5px 8px;
+    margin: 0 5px;
+}
+
+.btn-default {
+    border: 2px solid @black;
+    border-radius: 8px;
+    color: @primary;
+    box-shadow: none;
+}
+
+.btn-default:hover {
+        text-decoration: none;
+        background-color: @primary;
+        color: @white;
+        border: none;
 }
