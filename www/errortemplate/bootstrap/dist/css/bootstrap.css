@@ -6234,4 +6234,28 @@ h2 {
   height: 10px;
   background: #ff0202;
 }
+/* Forms
+-------------------------------------------------------------- */
+input,
+textarea {
+  padding: 5px 8px;
+  margin: 0 5px;
+  color: #ccc;
+  border: 2px solid #ccc;
+  -webkit-box-shadow: 0 0 4px #ccc;
+          box-shadow: 0 0 4px #ccc;
+}
+.btn-default {
+  color: #ff0202;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+.btn-default:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #ff0202;
+  border: none;
+}
 /*# sourceMappingURL=bootstrap.css.map */
