@@ -321,6 +321,8 @@ class GFFormsModel {
         //load notifications to legacy structure to maintain backward compatibility with legacy hooks and functions
         $form = self::load_notifications_to_legacy($form);
 
+		$form = apply_filters('gform_form_post_get_meta', $form);
+
         // cached form meta for cheaper retrieval on subsequent requests
         self::$_current_forms[$form_id] = $form;
 
@@ -1759,7 +1761,7 @@ class GFFormsModel {
             }
         }
 
-        return apply_filters("gform_field_value_$name", apply_filters("gform_field_value", $value, $field), $field);
+        return apply_filters( "gform_field_value_$name", apply_filters( 'gform_field_value', $value, $field, $name ), $field, $name );
     }
 
     public static function get_default_value($field, $input_id){
@@ -2049,8 +2051,9 @@ class GFFormsModel {
                         $value = "";
                     }
 
-                } else
+                } else {
                     $value = self::get_fileupload_value($form_id, $input_name);
+                }
             break;
 
             case "number" :
@@ -3344,13 +3347,14 @@ class GFFormsModel {
 
                 $field_value = $result->value;
                 //using long values if specified
-                if($use_long_values && strlen($field_value) >= (GFORMS_MAX_FIELD_LENGTH-10)){
-                    $field = RGFormsModel::get_field($form, $result->field_number);
-                    $long_text = RGFormsModel::get_field_value_long($lead, $result->field_number, $form, false);
+				$field_number = (string)$result->field_number;
+				if($use_long_values && strlen($field_value) >= (GFORMS_MAX_FIELD_LENGTH-10)){
+                    $field = RGFormsModel::get_field($form, $field_number );
+                    $long_text = RGFormsModel::get_field_value_long($lead, $field_number, $form, false);
                     $field_value = !empty($long_text) ? $long_text : $field_value;
                 }
 
-                $lead[$result->field_number] = $field_value;
+                $lead[$field_number] = $field_value;
                 $prev_lead_id = $result->id;
             }
         }
