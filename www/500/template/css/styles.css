@@ -1,0 +1,34 @@
+/* Typography
+-------------------------------------------------------------- */
+h1, h2, h3 {
+	font-family: "effra",sans-serif;
+}
+
+h1 {
+	font-size: 3em;
+	font-weight: bold;
+}
+
+h2 {
+	font-size: 2em;
+	font-weight: regular;
+}
+
+.errormsg {
+	font-size: 10em;
+	color: #e2dfdf;
+}
+
+.branding {
+	text-align: center;
+	display:block;
+}
+
+.branding img {
+	margin: 40px;
+}
+
+.topbar {
+	background: #ff0202;
+	height: 10px;
+}
