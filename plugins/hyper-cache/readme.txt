@@ -1,7 +1,7 @@
 === Hyper Cache ===
 Tags: cache,performance,staticizer,apache,htaccess,tuning,speed,bandwidth,optimization,tidy,gzip,compression,server load,boost
 Requires at least: 2.5
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: trunk
 Donate link: http://www.satollo.net/donations
 Contributors: satollo
@@ -55,6 +55,28 @@ the [Hyper Cache official forum](http://www.satollo.net/forums/forum/hyper-cache
 3. Mobile devices configuration
 
 == Changelog ==
+
+= 3.1.6 =
+
+* Fixed the post trashing detection
+
+= 3.1.5 =
+
+* Tidy option removed
+
+= 3.1.4 =
+
+* Fixed an error log always active
+
+= 3.1.3 =
+
+* Fixed the agents bypass
+* Added the "serve expired pages to bots" options
+* Added the readfile/file_get_contents switch
+* Fixed the draft saving triggering a cache invalidation
+* Added distinct cache clean for home and archives
+* Added debug logging when HYPER_CACHE_LOG is true (define it on wp-config.php)
+* Fixed the + sign on comment author
 
 = 3.1.2 =
 
