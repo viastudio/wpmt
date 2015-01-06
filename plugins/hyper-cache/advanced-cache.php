@@ -9,8 +9,10 @@ $hyper_cache_is_mobile = false;
 if (defined('IS_PHONE')) {
     $hyper_cache_is_mobile = IS_PHONE;
 } else {
-    $hyper_cache_is_mobile = preg_match('#(HC_MOBILE_AGENTS)#i', strtolower($_SERVER['HTTP_USER_AGENT']));
+    $hyper_cache_is_mobile = preg_match('#(HC_MOBILE_AGENTS)#i', $_SERVER['HTTP_USER_AGENT']);
 }
+
+$hyper_cache_is_bot = preg_match('#(googlebot)#i', $_SERVER['HTTP_USER_AGENT']);
 
 if (HC_MOBILE === 2 && $hyper_cache_is_mobile) {
     hyper_cache_header('stop - mobile');
@@ -40,16 +42,18 @@ if (isset($_COOKIE['cache_disable'])) {
     return false;
 }
 
-if (isset($_SERVER['HTTP_CACHE_CONTROL']) && $_SERVER['HTTP_CACHE_CONTROL'] == 'no-cache') {
-    hyper_cache_header('stop - no cache header');
-    $cache_stop = true;
-    return false;
-}
+if (!$hyper_cache_is_bot || $hyper_cache_is_bot && !HC_BOTS_IGNORE_NOCACHE) {
+    if (isset($_SERVER['HTTP_CACHE_CONTROL']) && $_SERVER['HTTP_CACHE_CONTROL'] == 'no-cache') {
+        hyper_cache_header('stop - no cache header');
+        $cache_stop = true;
+        return false;
+    }
 
-if (isset($_SERVER['HTTP_PRAGMA']) && $_SERVER['HTTP_PRAGMA'] == 'no-cache') {
-    hyper_cache_header('stop - no cache header');
-    $cache_stop = true;
-    return false;
+    if (isset($_SERVER['HTTP_PRAGMA']) && $_SERVER['HTTP_PRAGMA'] == 'no-cache') {
+        hyper_cache_header('stop - no cache header');
+        $cache_stop = true;
+        return false;
+    }
 }
 
 // Used globally
@@ -108,7 +112,7 @@ if (!empty($_COOKIE)) {
 
 // Globally used
 $hyper_cache_group = '';
-    
+
 if (HC_HTTPS === 1 && $hyper_cache_is_ssl) {
     $hyper_cache_group .= '-https';
 }
@@ -138,11 +142,14 @@ if (!is_file($hc_file)) {
 
 $hc_file_time = filemtime($hc_file);
 
-if (HC_MAX_AGE > 0 && $hc_file_time < time() - (HC_MAX_AGE * 3600)) {
-    hyper_cache_header('continue - old file');
-    return false;
+if (HC_SERVE_EXPIRED_TO_BOT && $hyper_cache_is_bot) {
+    hyper_cache_header('hit - bot');
+} else {
+    if (HC_MAX_AGE > 0 && $hc_file_time < time() - (HC_MAX_AGE * 3600)) {
+        hyper_cache_header('continue - old file');
+        return false;
+    }
 }
-
 if (array_key_exists("HTTP_IF_MODIFIED_SINCE", $_SERVER)) {
     $hc_if_modified_since = strtotime(preg_replace('/;.*$/', '', $_SERVER["HTTP_IF_MODIFIED_SINCE"]));
     if ($hc_if_modified_since >= $hc_file_time) {
@@ -176,32 +183,38 @@ if (HC_BROWSER_CACHE) {
     header('Expires: ' . gmdate("D, d M Y H:i:s", time() + $hc_cache_max_age) . " GMT");
 } else {
     header('Cache-Control: must-revalidate');
-    header('Pragma: no-cache');
+    //header('Pragma: no-cache');
 }
 
 if ($hc_gzip) {
     hyper_cache_header('hit - gzip' . $hyper_cache_group);
     header('Content-Encoding: gzip');
     header('Content-Length: ' . filesize($hc_file));
-    echo file_get_contents($hc_file);
 } else {
     hyper_cache_header('hit - plain' . $hyper_cache_group);
     header('Content-Length: ' . filesize($hc_file));
+}
+
+if (HC_READFILE) {
+    readfile($hc_file);
+} else {
     echo file_get_contents($hc_file);
 }
-flush();
 die();
 
 function hyper_cache_sanitize_uri($uri) {
-    $uri = preg_replace('/[^a-zA-Z0-9\.\/\-_]+/', '_', $uri);
+    $uri = preg_replace('/[^a-zA-Z0-9\/\-_]+/', '_', $uri);
     $uri = preg_replace('/\/+/', '/', $uri);
-    $uri = rtrim($uri, '.-_/');
+    //$uri = rtrim($uri, '.-_/');
     if (empty($uri) || $uri[0] != '/') {
         $uri = '/' . $uri;
     }
-    return rtrim($uri, '/');
+    if (strlen($uri) > 1 && substr($uri, -1, 1) == '/') {
+        $uri = rtrim($uri, '/') . '_';
+    }
+    return $uri;
 }
 
 function hyper_cache_header($value) {
-    header('X-Hyper-Cache: ' . $value);
+    header('X-Hyper-Cache: ' . $value, false);
 }
