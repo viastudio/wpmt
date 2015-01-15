@@ -4,7 +4,7 @@
   Plugin Name: Hyper Cache
   Plugin URI: http://www.satollo.net/plugins/hyper-cache
   Description: A easy to configure and efficient cache to increase the speed of your blog.
-  Version: 3.1.6
+  Version: 3.1.7
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
@@ -240,7 +240,6 @@ class HyperCache {
         $this->clean_post($post_id, isset($this->options['clean_archives_on_comment']), isset($this->options['clean_home_on_comment']));
     }
 
-
     function hook_save_post($post_id) {
         if (HYPER_CACHE_LOG)
             $this->log('Hook: save_post');
@@ -274,7 +273,7 @@ class HyperCache {
 
         $status = get_post_status($post_id);
         if (HYPER_CACHE_LOG)
-                $this->log('Status: ' . $status);
+            $this->log('Status: ' . $status);
         if ($status != 'publish' && $status != 'trash') {
             if (HYPER_CACHE_LOG)
                 $this->log('Post not published');
@@ -395,107 +394,102 @@ class HyperCache {
             return;
         }
 
+        $home_root = parse_url(get_option('home'), PHP_URL_PATH);
+
         if ($cache_stop || $hyper_cache_stop || $lite_cache_stop) {
-            return;
-        }
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            return;
-        }
-
-        if (!empty($_SERVER['QUERY_STRING'])) {
-            return;
-        }
-
-        if (is_user_logged_in()) {
-            return;
-        }
-
-        // Never cache pages generated for administrator (to be patched to see if the user is an administrator)
-        //if (get_current_user_id() == 1) return;
-
-        if (is_404()) {
-            if (isset($this->options['reject_404'])) {
-                return;
-            }
-
-            $file = $this->get_folder() . '/' . substr(get_option('home'), strpos(get_option('home'), '://') + 3) . '/404.html';
-
-            if (file_exists($file) && ($this->options['max_age'] == 0 || filemtime($file) > time() - $this->options['max_age'] * 3600)) {
-                header('Content-Type: text/html;charset=UTF-8');
-                // For some reason it seems more performant than readfile...
-                header('X-Hyper-Cache: hit,404');
-                echo file_get_contents($file);
-                die();
-            }
-        }
-
-        if (is_trackback()) {
-            return;
+        } else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $cache_stop = true;
+        } else if (!empty($_SERVER['QUERY_STRING'])) {
+            $cache_stop = true;
+        } else if (is_user_logged_in()) {
+            $cache_stop = true;
+        } else if (is_trackback()) {
+            $cache_stop = true;
         }
 
         // Global feed and global comment feed
-        if (isset($this->options['reject_feeds']) && is_feed()) {
-            return;
+        else if (isset($this->options['reject_feeds']) && is_feed()) {
+            $cache_stop = true;
         }
 
         // Single post/page feed
-        if (isset($this->options['reject_comment_feeds']) && is_comment_feed()) {
-            return;
-        }
-
-        if (isset($this->options['reject_home']) && is_front_page()) {
-            return;
-        }
-
-        if (is_robots()) {
-            return;
+        else if (isset($this->options['reject_comment_feeds']) && is_comment_feed()) {
+            $cache_stop = true;
+        } else if (isset($this->options['reject_home']) && is_front_page()) {
+            $cache_stop = true;
+        } else if (is_robots()) {
+            $cache_stop = true;
         }
 
         if (defined('SID') && SID != '') {
-            return;
-        }
-
-        $home_root = parse_url(get_option('home'), PHP_URL_PATH);
-        if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 4) == ($home_root . '/wp-')) {
-            return;
+            $cache_stop = true;
         }
 
         // Compatibility with XML Sitemap 4.x
-        if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 8) == ($home_root . '/sitemap')) {
-            return;
+        else if (substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 8) == ($home_root . '/sitemap')) {
+            $cache_stop = true;
+        }
+        // Never cache pages generated for administrator (to be patched to see if the user is an administrator)
+        //if (get_current_user_id() == 1) return;
+        else if (is_404()) {
+            if (isset($this->options['reject_404'])) {
+                $cache_stop = true;
+            } else {
+                $file = $this->get_folder() . '/' . substr(get_option('home'), strpos(get_option('home'), '://') + 3) . '/404.html';
+
+                if (file_exists($file) && ($this->options['max_age'] == 0 || filemtime($file) > time() - $this->options['max_age'] * 3600)) {
+                    header('Content-Type: text/html;charset=UTF-8');
+                    // For some reason it seems more performant than readfile...
+                    header('X-Hyper-Cache: hit,404');
+                    echo file_get_contents($file);
+                    die();
+                }
+            }
         }
 
+        if (!$cache_stop && substr($_SERVER['REQUEST_URI'], 0, strlen($home_root) + 4) == ($home_root . '/wp-')) {
+            $cache_stop = true;
+        }
+
+
+
         // URLs to reject (exact)
-        if (isset($this->options['reject_uris_exact_enabled'])) {
+        if (!$cache_stop && isset($this->options['reject_uris_exact_enabled'])) {
             if (is_array($this->options['reject_uris_exact'])) {
                 foreach ($this->options['reject_uris_exact'] as &$uri) {
-                    if ($_SERVER['REQUEST_URI'] == $uri)
-                        return;
+                    if ($_SERVER['REQUEST_URI'] == $uri) {
+                        $cache_stop = true;
+                        break;
+                    }
                 }
             }
         }
 
         // URLs to reject
-        if (isset($this->options['reject_uris_enabled'])) {
+        if (!$cache_stop && isset($this->options['reject_uris_enabled'])) {
             if (is_array($this->options['reject_uris'])) {
                 foreach ($this->options['reject_uris'] as &$uri) {
-                    if (strpos($_SERVER['REQUEST_URI'], $uri) === 0)
-                        return;
+                    if (strpos($_SERVER['REQUEST_URI'], $uri) === 0) {
+                        $cache_stop = true;
+                        break;
+                    }
                 }
             }
         }
 
-        if (!empty($this->options['reject_old_posts']) && is_single()) {
+        if (!$cache_stop && !empty($this->options['reject_old_posts']) && is_single()) {
             global $post;
             if (strtotime($post->post_date_gmt) < time() - 86400 * $this->options['reject_old_posts'])
                 return;
         }
 
         // Removes the comment author cookie
-        foreach ($_COOKIE as $n => $v) {
-            if (substr($n, 0, 14) == 'comment_author') {
-                unset($_COOKIE[$n]);
+        if (!$cache_stop) {
+            foreach ($_COOKIE as $n => $v) {
+                if (substr($n, 0, 14) == 'comment_author') {
+                    unset($_COOKIE[$n]);
+                }
             }
         }
 
@@ -619,30 +613,69 @@ class HyperCache {
 
  */
 
-function hyper_cache_callback($buffer) {
-    global $cache_stop, $lite_cache, $hyper_cache_stop, $hyper_cache_group;
+function hyper_cache_cdn_callback($matches) {
+    //error_log($matches[1]);
+    $parts = parse_url($matches[2]);
+    //$return = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+    $return = HyperCache::$instance->options['cdn_url'] . $parts['path'];
 
-    if ($cache_stop || $hyper_cache_stop) {
-        return $buffer;
+    if (!empty($parts['query'])) {
+        $return .= '?' . $parts['query'];
     }
+    return $matches[1] . $return . $matches[3];
+}
+
+function hyper_cache_callback($buffer) {
+    global $cache_stop, $lite_cache, $hyper_cache_stop, $hyper_cache_group, $hyper_cache_is_mobile, $hyper_cache_gzip_accepted;
+
+    $buffer = trim($buffer);
 
     if (strlen($buffer) == 0) {
         return '';
+    }
+
+    $options = HyperCache::$instance->options;
+
+    // Replace the CDN Url
+    if (isset($options['cdn_enabled'])) {
+        $parts = parse_url(get_option('home'));
+        $base = quotemeta($parts['scheme'] . '://' . $parts['host']);
+        $base = quotemeta('http://' . $parts['host']);
+
+        $buffer = preg_replace_callback("#(<img.+src=[\"'])(" . $base . ".*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
+        $buffer = preg_replace_callback("#(<script.+src=[\"'])(" . $base . ".*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
+        $buffer = preg_replace_callback("#(<link.+href=[\"'])(" . $base . ".*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
+    }
+
+    $buffer = apply_filters('cache_buffer', $buffer);
+
+    if ($cache_stop || $hyper_cache_stop) {
+
+        if (isset($options['gzip']) && $hyper_cache_gzip_accepted && function_exists('gzencode')) {
+            //error_log('dsfsdfsdfsdfsdffafasfsafdsa');
+            header('Cache-Control: private, max-age=0, no-cache, no-transform', false);
+            header('Vary: Accept-Encoding,User-Agent');
+            header('Content-Encoding: gzip');
+            header('X-Hyper-Cache: gzip on the fly', false);
+            return gzencode($buffer, 9);
+        }
+        return $buffer;
     }
 
     $uri = hyper_cache_sanitize_uri($_SERVER['REQUEST_URI']);
 
     $lc_dir = HyperCache::$instance->get_folder() . '/' . strtolower($_SERVER['HTTP_HOST']) . $uri;
 
-    $options = HyperCache::$instance->options;
-
-    $lc_group = '';
-
-
-    global $hyper_cache_is_mobile;
     if ($hyper_cache_is_mobile) {
         // Bypass (should no need since there is that control on advanced-cache.php)
         if ($options['mobile'] == 2) {
+            if (isset($options['gzip']) && $hyper_cache_gzip_accepted && function_exists('gzencode')) {
+                header('Cache-Control: private, max-age=0, no-cache, no-transform', false);
+                header('Vary: Accept-Encoding,User-Agent');
+                header('Content-Encoding: gzip');
+                header('X-Hyper-Cache: mobile, gzip on the fly', false);
+                return gzencode($buffer, 9);
+            }
             return $buffer;
         }
     }
@@ -684,8 +717,6 @@ function hyper_cache_callback($buffer) {
         }
     }
 
-    $buffer = apply_filters('cache_buffer', $buffer);
-
     file_put_contents($lc_file, $buffer . '<!-- hyper cache ' . date('Y-m-d h:i:s') . ' -->');
 
     // Saves the gzipped version
@@ -694,7 +725,6 @@ function hyper_cache_callback($buffer) {
         gzwrite($gzf, $buffer . '<!-- hyper cache gzip ' . date('Y-m-d h:i:s') . ' -->');
         gzclose($gzf);
     }
-
     return $buffer;
 }
 

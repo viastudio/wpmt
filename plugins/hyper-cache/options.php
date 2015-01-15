@@ -11,6 +11,14 @@ if (!isset($plugin->options['translation_disabled'])) {
 if ($controls->is_action('save')) {
     $controls->options = stripslashes_deep($_POST['options']);
 
+    $controls->options['cdn_url'] = strtolower(trim($controls->options['cdn_url']));
+    $controls->options['cdn_url'] = rtrim($controls->options['cdn_url'], '/');
+    if (!empty($controls->options['cdn_url'])) {
+        if (strpos($controls->options['cdn_url'], 'http') !== 0) {
+            $controls->options['cdn_url'] = 'http://' . $controls->options['cdn_url'];
+        }
+    }
+
     $controls->options['folder'] = trim($controls->options['folder']);
     if (!empty($controls->options['folder']))
         $controls->options['folder'] = untrailingslashit($controls->options['folder']);
@@ -277,7 +285,39 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                 <li><a href="#tabs-general"><?php _e('General', 'hyper-cache'); ?></a></li>
                 <li><a href="#tabs-rejects"><?php _e('Bypasses', 'hyper-cache'); ?></a></li>
                 <li><a href="#tabs-mobile"><?php _e('Mobile', 'hyper-cache'); ?></a></li>
+                <?php if (defined('HYPER_CACHE_BETA') && HYPER_CACHE_BETA) { ?>
+                <li><a href="#tabs-cdn"><?php _e('CDN', 'hyper-cache'); ?></a></li>
+                <?php } ?>
             </ul>
+
+             <?php if (defined('HYPER_CACHE_BETA') && HYPER_CACHE_BETA) { ?>
+            <div id="tabs-cdn">
+                <p>EXPERIEMTAL! It works only with images, css, scripts.</p>
+                <table class="form-table">
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td>
+                            <?php $controls->checkbox('cdn_enabled', 'Enable'); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>CDN URL</th>
+                        <td>
+                            <?php $controls->text('cdn_url', 50); ?>
+                            <p class="description">
+                                Write here the CDN URL. For example a MaxCDN URL is something like
+                                <code>http://foo.bar.netdna-cdn.com</code>. You should usually create a pull zone in your
+                                CDN panel and they will give your an URL.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <p>
+                    I'm actually testing it with <a href="http://www.satollo.net/affiliate/maxcdn" target="_blank">MaxCDN</a> and
+                    <a href="http://www.satollo.net/affiliate/keycdn" target="_blank">KeyCDN</a>.
+                </p>
+            </div>
+            <?php } ?>
 
             <div id="tabs-general">
 
