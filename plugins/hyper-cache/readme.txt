@@ -6,33 +6,40 @@ Stable tag: trunk
 Donate link: http://www.satollo.net/donations
 Contributors: satollo
 
-Hyper Cache is flexible and easy to configure cache system for WordPress.
+Hyper Cache is a performant and easy to configure cache system for WordPress.
 
 == Description ==
 
-New! Version 3.0 has been rewritten. Be patient if some bugs are present and report
-me any issue. Thank you.
+Hyper Cache is a cache plugin specifically written to get the maximum
+speed for your WordPress blog. It can be used in low resources hosting as well
+on high end servers.
 
-Hyper Cache is a new cache system for WordPress, specifically written for
-people which have their blogs on low resources hosting provider
-(cpu and mysql). It works even with hosting based on Microsoft IIS (just tuning
-the configuration). It has three invalidation method: all the cache, single post
-based and nothing but with control on home and archive pages invalidation.
+Hyper Cache is purely PHP and works on every blog: no complex configurations are need
+and when you deactivate it no stale setting are left floating around.
 
-More can be read on the [official plugin page](http://www.satollo.net/plugins/hyper-cache).
+Short list of features:
 
-Thanks to:
+* Mobile aware: double cache for desktop and mobile site versions
+* Mobile theme switch option: change the theme on mobile device detection
+* Able to serve expired pages to bots to increase the perceived speed by bots
+* Manages compression even on the fly for non cached pages
+* Lots of configurable bypasses: matching cookies, matching urls, user agents, ...
+* Comments aware: is able to serve cached pages even to visitors who commented the blog (perfect for
+blog with great readers paritipation)
+* Cache folder can be moved outside your blog space to exclude it from backups
+* Controls over cache cleaning on blog events (post edited, comments, ...)
+* Autoclean to controls the cache used disk space
+* CDN support (experimental)
+* Other special options
+* Response header signature to check the working status
 
-* Amaury Balmer
-* Frank Luef
-* HypeScience, Martin Steldinger, Giorgio Guglielmino for test and bugs submissions
-* Ishtiaq
-* Gene Steinberg
-* Marcis Gasun
-* Florian Höch
-* Quentin
-* Mckryak
-* Tommy Tung
+More can be read on the [Hyper Cache official page](http://www.satollo.net/plugins/hyper-cache).
+
+Other plugins by Stefano Lissa:
+
+* [Newsletter](http://www.thenewsletterplugin.com)
+* [Header and Footer](http://www.satollo.net/plugins/header-footer)
+* [Include Me](http://www.satollo.net/plugins/include-me)
 
 
 == Installation ==
@@ -55,6 +62,12 @@ the [Hyper Cache official forum](http://www.satollo.net/forums/forum/hyper-cache
 3. Mobile devices configuration
 
 == Changelog ==
+
+= 3.1.7 =
+
+* Added experimental support for CDN
+* Added on-the-fly compression
+* Fixed some headers
 
 = 3.1.6 =
 

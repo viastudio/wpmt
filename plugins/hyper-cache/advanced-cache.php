@@ -12,6 +12,8 @@ if (defined('IS_PHONE')) {
     $hyper_cache_is_mobile = preg_match('#(HC_MOBILE_AGENTS)#i', $_SERVER['HTTP_USER_AGENT']);
 }
 
+$hyper_cache_gzip_accepted = isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false;
+
 $hyper_cache_is_bot = preg_match('#(googlebot)#i', $_SERVER['HTTP_USER_AGENT']);
 
 if (HC_MOBILE === 2 && $hyper_cache_is_mobile) {
@@ -125,8 +127,8 @@ if (HC_MOBILE === 1 && $hyper_cache_is_mobile) {
 $hc_uri = hyper_cache_sanitize_uri($_SERVER['REQUEST_URI']);
 
 $hc_file = 'HC_FOLDER/' . strtolower($_SERVER['HTTP_HOST']) . $hc_uri . '/index' . $hyper_cache_group . '.html';
-if (HC_GZIP == 1) {
-    $hc_gzip = isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false;
+if (HC_GZIP == 1 && $hyper_cache_gzip_accepted) {
+    $hc_gzip = true;
 } else {
     $hc_gzip = false;
 }
@@ -179,10 +181,10 @@ if (HC_BROWSER_CACHE) {
             $hc_cache_max_age = time() + (24 * 3600) - $hc_file_time;
         }
     }
-    header('Cache-Control: max-age=' . $hc_cache_max_age);
-    header('Expires: ' . gmdate("D, d M Y H:i:s", time() + $hc_cache_max_age) . " GMT");
+    header('Cache-Control: private, max-age=' . $hc_cache_max_age, false);
+    //header('Expires: ' . gmdate("D, d M Y H:i:s", time() + $hc_cache_max_age) . " GMT");
 } else {
-    header('Cache-Control: must-revalidate');
+    header('Cache-Control: private, max-age=0, no-cache, no-transform', false);
     //header('Pragma: no-cache');
 }
 
