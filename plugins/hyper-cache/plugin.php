@@ -684,7 +684,8 @@ function hyper_cache_callback($buffer) {
         $lc_file = HyperCache::$instance->get_folder() . '/' . strtolower($_SERVER['HTTP_HOST']) . '/404.html';
     } else {
         $lc_file = $lc_dir . '/index' . $hyper_cache_group . '.html';
-
+        print_r($lc_file);
+        die;
         if (!is_dir($lc_dir)) {
             wp_mkdir_p($lc_dir);
         }
