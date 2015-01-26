@@ -63,6 +63,10 @@ the [Hyper Cache official forum](http://www.satollo.net/forums/forum/hyper-cache
 
 == Changelog ==
 
+= 3.1.8 =
+
+* Fixed the comment awaiting notification cached
+
 = 3.1.7 =
 
 * Added experimental support for CDN
