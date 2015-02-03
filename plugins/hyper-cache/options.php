@@ -80,7 +80,7 @@ if ($controls->is_action('save')) {
     $r = $plugin->build_advanced_cache();
 
     if ($r == false) {
-        $controls->errors = 'Unable to write the <code>wp-content/advanced-cache.php</code> file. Check the file or folder permissions.';
+        $controls->errors = __('Unable to write the <code>wp-content/advanced-cache.php</code> file. Check the file or folder permissions.', 'hyper-cache');
     }
 }
 
@@ -92,7 +92,7 @@ if ($controls->is_action('clean')) {
 
 if ($controls->is_action('autoclean')) {
     $plugin->hook_hyper_cache_clean();
-    $controls->messages = 'Done!';
+    $controls->messages = __('Done!', 'hyper-cache');
 }
 
 if ($controls->is_action('clean-home')) {
@@ -129,7 +129,7 @@ if ($controls->is_action('clean-home')) {
 
 if ($controls->is_action('delete')) {
     delete_option('hyper-cahe');
-    $controls->messages = 'Options deleted';
+    $controls->messages = __('Options deleted', 'hyper-cache');
 }
 
 if ($controls->is_action('size')) {
@@ -145,7 +145,7 @@ if ($controls->is_action('import')) {
     $old_options = get_option('hyper');
 
     if (!is_array($old_options)) {
-        $controls->errors = 'Old Hyper Cache options are missing or not readable';
+        $controls->errors = __('Old Hyper Cache options are missing or not readable', 'hyper-cache');
     } else {
 
         $uris = $plugin->text_to_list($old_options['reject']);
@@ -168,7 +168,7 @@ if ($controls->is_action('import')) {
 
         update_option('hyper-cache', $controls->options);
 
-        $controls->messages = 'Old options imported, now review them and save.';
+        $controls->messages = __('Old options imported, now review them and save.', 'hyper-cache');
     }
 }
 
@@ -217,8 +217,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
     <?php if (!defined('WP_CACHE') || !WP_CACHE) { ?>
         <div class="error">
             <p>
-                You must add to the file wp-config.php (after the <code>define('WPLANG', '');</code>) the line of code:
-                <code>define('WP_CACHE', true);</code>.
+                <?php _e('You must add to the file wp-config.php (after the <code>define("WPLANG", "");</code>) the line of code: <code>define("WP_CACHE", true);</code>', 'hyper-cache'); ?>
             </p>
         </div>
     <?php } ?>
@@ -255,6 +254,14 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
         </div>
     <?php } ?>
 
+    <p>
+        Check out my other useful plugins:<br>
+        <a href="http://www.satollo.net/plugins/comment-plus?utm_source=hyper-cache&utm_medium=banner&utm_campaign=comment-plus" target="_blank"><img src="http://www.satollo.net/images/plugins/comment-plus-icon.png"></a>
+        <a href="http://www.satollo.net/plugins/header-footer?utm_source=hyper-cache&utm_medium=banner&utm_campaign=header-footer" target="_blank"><img src="http://www.satollo.net/images/plugins/header-footer-icon.png"></a>
+        <a href="http://www.satollo.net/plugins/include-me?utm_source=hyper-cache&utm_medium=banner&utm_campaign=include-me" target="_blank"><img src="http://www.satollo.net/images/plugins/include-me-icon.png"></a>
+        <a href="http://www.thenewsletterplugin.com/?utm_source=hyper-cache&utm_medium=banner&utm_campaign=newsletter" target="_blank"><img src="http://www.satollo.net/images/plugins/newsletter-icon.png"></a>
+    </p>
+
 
     <?php $controls->show(); ?>
 
@@ -270,14 +277,13 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
             <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5PHGDGNHAYLJ8" target="_blank"><img style="vertical-align: bottom" src="http://www.satollo.net/images/donate.png"></a>
             Even <b>2$</b> helps! (<a href="http://www.satollo.net/donations" target="_blank">read more</a>)
         </p>
-        <p>
-            Want a full mail marketing system in your blog? Try my free <a href="http://www.satollo.net/plugins/newsletter" target="_blank">Newsletter</a> plugin.
-        </p>
+
         <p>
             <?php $controls->button('clean', __('Clean the whole cache', 'hyper-cache')); ?>
             <?php $controls->button('clean-home', __('Clean home and archives', 'hyper-cache')); ?>
             <?php $controls->button('size', __('Compute the cache size', 'hyper-cache')); ?>
-            <?php $controls->button('import', __('Import old options', 'hyper-cache'), 'Sure? Your setting will be overwritten.'); ?>
+            <?php $controls->button('import', __('Import old options', 'hyper-cache'),
+			__('Sure? Your setting will be overwritten.', 'hyper-cache')); ?>
         </p>
 
         <div id="tabs">
@@ -285,19 +291,16 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                 <li><a href="#tabs-general"><?php _e('General', 'hyper-cache'); ?></a></li>
                 <li><a href="#tabs-rejects"><?php _e('Bypasses', 'hyper-cache'); ?></a></li>
                 <li><a href="#tabs-mobile"><?php _e('Mobile', 'hyper-cache'); ?></a></li>
-                <?php if (defined('HYPER_CACHE_BETA') && HYPER_CACHE_BETA) { ?>
                 <li><a href="#tabs-cdn"><?php _e('CDN', 'hyper-cache'); ?></a></li>
-                <?php } ?>
             </ul>
 
-             <?php if (defined('HYPER_CACHE_BETA') && HYPER_CACHE_BETA) { ?>
             <div id="tabs-cdn">
-                <p>EXPERIEMTAL! It works only with images, css, scripts.</p>
+                <p><?php _e('It works only with images, css, scripts.', 'hyper-cache'); ?></p>
                 <table class="form-table">
                     <tr>
                         <th>&nbsp;</th>
                         <td>
-                            <?php $controls->checkbox('cdn_enabled', 'Enable'); ?>
+                            <?php $controls->checkbox('cdn_enabled', __('Enable', 'hyper-cache')); ?>
                         </td>
                     </tr>
                     <tr>
@@ -305,9 +308,10 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->text('cdn_url', 50); ?>
                             <p class="description">
-                                Write here the CDN URL. For example a MaxCDN URL is something like
-                                <code>http://foo.bar.netdna-cdn.com</code>. You should usually create a pull zone in your
-                                CDN panel and they will give your an URL.
+                                <?php _e('Write here the CDN URL.', 'hyper-cache'); ?>
+                                <?php _e('For example a MaxCDN URL is something like', 'hyper-cache'); ?>
+                                <code>http://foo.bar.netdna-cdn.com</code>.
+                                <?php _e('You should usually create a pull zone in your CDN panel and they will give your an URL.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -317,26 +321,27 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <a href="http://www.satollo.net/affiliate/keycdn" target="_blank">KeyCDN</a>.
                 </p>
             </div>
-            <?php } ?>
 
             <div id="tabs-general">
 
                 <table class="form-table">
+                    <!-- Do not translate that -->
                     <tr>
                         <th>Disable translations</th>
                         <td>
                             <?php $controls->checkbox('translation_disabled', 'Disable'); ?>
                             <p class="description">
-                                <!-- Do not translate that -->
+
                                 If you want to see this panel with the original labels, you can disable the
                                 tranlsation.
                             </p>
                         </td>
                     </tr>
+                    <!-- /Do not translate that -->
                     <tr>
                         <th><?php _e('Cached pages will be valid for', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->text('max_age'); ?> hours
+                            <?php $controls->text('max_age'); ?><?php _e('hours', 'hyper-cache'); ?>
                             <p class="description"><?php _e('0 means forever.', 'hyper-cache'); ?></p>
                         </td>
                     </tr>
@@ -346,33 +351,23 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php $controls->checkbox('gzip'); ?>
 
                             <p class="description">
-                                <?php _e('If you note odd characters when enabled, disable it since your server is already
-                                compressing the pages.', 'hyper-cache'); ?>
+                                <?php _e('If you note odd characters when enabled, disable it since your server is already compressing the pages.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
                     <tr>
-                        <th>When the home is refreshed, refresh even the</th>
+
+                        <th><?php _e('When the home is refreshed, refresh even the', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->text('clean_last_posts', 5); ?> latest post
+                            <?php $controls->text('clean_last_posts', 5); ?> <?php _e('latest post', 'hyper-cache'); ?>
                             <p class="description">
                                 <?php _e('The number of latest posts to invalidate when the home is invalidated.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
-                    <tr>
-                        <th>When a post receives a comment</th>
-                        <td>
-                            <?php $controls->checkbox('clean_archives_on_comment'); ?> clean archives (categories, tags, ..., but not the home)
-                            <br>
-                            <?php $controls->checkbox('clean_home_on_comment'); ?> clean the home
-                            <p class="description">
 
-                            </p>
-                        </td>
-                    </tr>
                     <tr>
-                        <th>When a post is edited</th>
+                        <th><?php _e('When a post is edited', 'hyper-cache'); ?></th>
                         <td>
                             <?php $controls->checkbox('clean_archives_on_post_edit'); ?> clean archives (categories, tags, ..., but not the home)
                             <br>
@@ -384,13 +379,25 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     </tr>
 
                     <tr>
+                        <th><?php _e('When a post receives a comment', 'hyper-cache'); ?></th>
+                        <td>
+                            <?php $controls->checkbox('clean_archives_on_comment'); ?> clean archives (categories, tags, ..., but not the home)
+                            <br>
+                            <?php $controls->checkbox('clean_home_on_comment'); ?> clean the home
+                            <p class="description">
+
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
                         <th><?php _e('Cache folder', 'hyper-cache'); ?></th>
                         <td>
                             <?php $controls->text('folder', 70); ?> path on disk
                             <p class="description">
-                                Leave blank for default value. You can even evaluate to leave
-                                this blank and create a symbolic link <code>wp-content/cache/hyper-cache -&gt; [your folder]</code>. Your blog is located on
-                                <code><?php echo ABSPATH; ?></code>. A wrong configuration can destroy your blog.
+                                <?php _e('Leave blank for default value.', 'hyper-cache'); ?>
+                                <?php _e('You can even evaluate to leave this blank and create a symbolic link <code>wp-content/cache/hyper-cache -&gt; [your folder]</code>.', 'hyper-cache'); ?>
+                                <?php _e('A wrong configuration can destroy your blog.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -399,7 +406,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <td>
                             <?php $controls->checkbox('autoclean', 'enable it'); ?>
 
-                            (will run again in <?php echo (int)((wp_next_scheduled('hyper_cache_clean')-time())/60) ?> minutes)
+                            (<?php _e('will run again in', 'hyper-cache'); ?> <?php echo (int)((wp_next_scheduled('hyper_cache_clean')-time())/60) ?> <?php _e('minutes', 'hyper-cache'); ?>)
                             <p class="description">
                                 <?php _e('The autoclean process removes old files to save disk space.', 'hyper-cache'); ?>
                                 <?php _e('If you enable the "serve expired pages to bots", you should disable the auto clean.', 'hyper-cache'); ?>
@@ -409,15 +416,12 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr valign="top">
                         <th><?php _e('Allow browser caching', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->checkbox('browser_cache', 'enable it'); ?>
+                            <?php $controls->checkbox('browser_cache', __('Enable', 'hyper-cache')); ?>
 
                             with an expire time of <?php $controls->text('browser_cache_hours', 5); ?> hours
                             <p class="description">
-                                When enabled Hyper Cache sends a signal to the browser allowing it to NOT request a page more than once and
-                                to use the copy it has in the local cache. If you set an expire time greater than zero, the browser should keep the copy
-                                for that amount of hours, otherwise Hyper Cache will tell the browser to keep the copy until the page expire in the blog
-                                cache.<br>
-                                Usually I keep this feature disabled.
+                                <?php _e('Lets browser to use a local copy of the page if newer than specified.', 'hyper-cache'); ?>
+                                <?php _e('Attention: the browser may not reload a page from the blog showing not updated content. ', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -425,7 +429,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Remove HTTP/HTTPS', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->checkbox('remove_protocol', 'Enable'); ?>
+                            <?php $controls->checkbox('remove_protocol', __('Enable', 'hyper-cache')); ?>
                             <p class="description">
                                If your site uses both HTTP and HTTPS it's better to have page links as
                                <code>://www.domain.com/...</code> without the protocol.
@@ -438,9 +442,10 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <th><?php _e('HTTPS', 'hyper-cache'); ?></th>
                         <td>
                             <?php $controls->select('https', array(0 => __('Bypass the cache', 'hyper-cache'),
-                                1 => __('Cache separately', 'hyper-cache'),
+                                1 => __('Build a separated cache', 'hyper-cache'),
                                 2 => __('Use the standard cache (I have HTTP/HTTPS aware pages)', 'hyper-cache'))); ?>
                             <p class="description">
+                                <?php _e('Pages are usually different when served in HTTP and HTTPS.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -448,11 +453,10 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Use readfile()', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->checkbox('readfile', 'Enable'); ?>
+                            <?php $controls->checkbox('readfile', __('Enable', 'hyper-cache')); ?>
                             <p class="description">
-                               The PHP function readfile() to send back a page should optimized but on some server
-                               it has less performances the a standard file_get_contents(). Probably you won't notice the
-                               difference.
+                               <?php _e('Use the PHP function readfile() to send back a page.', 'hyper-cache'); ?>
+                               <?php _e('It should be better than the file_get_contents() actually used.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -460,7 +464,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Ignore no-cache header from bots', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->checkbox('bots_ignore_nocache', 'Enable'); ?>
+                            <?php $controls->checkbox('bots_ignore_nocache', __('Enable', 'hyper-cache')); ?>
                             <p class="description">
                                 Bots usually send a no-cache request to ask always fresh pages. This option force the cache to
                                 ignore such request and serve a caches page if available.
@@ -471,9 +475,9 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Serve expired pages to bots', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->checkbox('serve_expired_to_bots', 'Enable'); ?>
+                            <?php $controls->checkbox('serve_expired_to_bots', __('Enable', 'hyper-cache')); ?>
                             <p class="description">
-                                Serve a cache page even if expired when requested by bots.
+                                <?php _e('Serve a cache page even if expired when requested by bots.', 'hyper-cache'); ?>
                             </p>
                         </td>
                     </tr>
@@ -591,7 +595,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                     <tr>
                         <th><?php _e('Reject posts older than', 'hyper-cache'); ?></th>
                         <td>
-                            <?php $controls->text('reject_old_posts', 5); ?> days
+                            <?php $controls->text('reject_old_posts', 5); ?>
+							<?php _e('days', 'hyper-cache'); ?>
                             <p class="description">
                                 <?php _e('Older posts won\'t be cached and stored resulting in a lower disk space usage.', 'hyper-cache'); ?>
                                 <?php _e('Useful when older posts have low traffic.', 'hyper-cache'); ?>
@@ -622,7 +627,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                             <?php
                             $themes = wp_get_themes();
                             //var_dump($themes);
-                            $list = array('' => 'Use the active blog theme');
+                            $list = array('' => __('Use the active blog theme', 'hyper-cache'));
                             foreach ($themes as $theme)
                                 $list[$theme->stylesheet] = $theme->name;
                             ?>
@@ -636,7 +641,7 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         <th><?php _e('Mobile user agents', 'hyper-cache'); ?></th>
                         <td>
                             <?php $controls->textarea('mobile_agents'); ?>
-                            <?php $controls->button('reset_mobile_agents', 'Reset'); ?>
+                            <?php $controls->button('reset_mobile_agents', __('Reset', 'hyper-cache' )); ?>
                             <p class="description">
                                 <?php _e('One per line.', 'hyper-cache'); ?>
                                 <?php _e('A "user agent" is a text which identify the kind of device used to surf the site.', 'hyper-cache'); ?>
