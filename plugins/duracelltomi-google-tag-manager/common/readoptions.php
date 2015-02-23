@@ -7,6 +7,7 @@ define( 'GTM4WP_OPTION_DATALAYER_NAME',        'gtm-datalayer-variable-name' );
 define( 'GTM4WP_OPTION_INCLUDE_REMARKETING',   'include-remarketing' );
 define( 'GTM4WP_OPTION_INCLUDE_LOGGEDIN',      'include-loggedin' );
 define( 'GTM4WP_OPTION_INCLUDE_USERROLE',      'include-userrole' );
+define( 'GTM4WP_OPTION_INCLUDE_USERID',        'include-userid' );
 define( 'GTM4WP_OPTION_INCLUDE_POSTTYPE',      'include-posttype' );
 define( 'GTM4WP_OPTION_INCLUDE_CATEGORIES',    'include-categories' );
 define( 'GTM4WP_OPTION_INCLUDE_TAGS',          'include-tags' );
@@ -90,6 +91,7 @@ $gtm4wp_defaultoptions = array(
 	GTM4WP_OPTION_INCLUDE_REMARKETING  => false,
 	GTM4WP_OPTION_INCLUDE_LOGGEDIN     => false,
 	GTM4WP_OPTION_INCLUDE_USERROLE     => false,
+	GTM4WP_OPTION_INCLUDE_USERID       => false,
 	GTM4WP_OPTION_INCLUDE_POSTTYPE     => true,
 	GTM4WP_OPTION_INCLUDE_CATEGORIES   => true,
 	GTM4WP_OPTION_INCLUDE_TAGS         => true,

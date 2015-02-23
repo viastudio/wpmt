@@ -66,6 +66,10 @@ $GLOBALS["gtm4wp_includefieldtexts"] = array(
 		"label"       => __( "Logged in user role", GTM4WP_TEXTDOMAIN ),
 		"description" => __( "Check this option to include the role of the logged in user.", GTM4WP_TEXTDOMAIN )
 	),
+	GTM4WP_OPTION_INCLUDE_USERID      => array(
+		"label"       => __( "Logged in user ID", GTM4WP_TEXTDOMAIN ),
+		"description" => __( "Check this option to include the ID of the logged in user.", GTM4WP_TEXTDOMAIN )
+	),
 	GTM4WP_OPTION_INCLUDE_REMARKETING => array(
 		"label"       => __( "Remarketing variable", GTM4WP_TEXTDOMAIN ),
 		"description" => __( "Check this option to include a dataLayer variable where all dataLayer values are stored to be included in your AdWords remarketing tag as a custom variable field", GTM4WP_TEXTDOMAIN )
@@ -142,7 +146,7 @@ $GLOBALS["gtm4wp_scrollerfieldtexts"] = array(
 	),
 	GTM4WP_OPTION_SCROLLER_READERTIME   => array(
 		"label"       => __( "Scroller time", GTM4WP_TEXTDOMAIN ),
-		"description" => __( "Enter the number of milliseconds after the the scroller user is being treated as a reader, someone who really reads the content, not just scrolls through it.", GTM4WP_TEXTDOMAIN )
+		"description" => __( "Enter the number of seconds after the the scroller user is being treated as a reader, someone who really reads the content, not just scrolls through it.", GTM4WP_TEXTDOMAIN )
 	)
 );
 
