@@ -60,7 +60,7 @@ jQuery( function() {
 		} (document, "script", "twitter-wjs"));
 	} // end of loading Twitter JS
 
-	twttr.ready(function ( twttr ) {
+	window.twttr.ready(function ( twttr ) {
 		twttr.events.bind( 'tweet', function ( intent_event ) {
 			if ( intent_event ) {
 				var label = intent_event.data.tweet_id;
@@ -78,14 +78,14 @@ jQuery( function() {
 			}
 		});
 
-		twttr.events.bind( 'follow', function ( intent_event ) {
+		window.twttr.events.bind( 'follow', function ( intent_event ) {
 			if ( intent_event ) {
 				var label = intent_event.data.user_id + " (" + intent_event.data.screen_name + ")";
 
 				window[ gtm4wp_datalayer_name ].push({
 					'event': 'gtm4wp.socialAction',
 					'network': 'twitter',
-					'socialAction': 'tweet',
+					'socialAction': 'follow',
 					'opt_target': label,
 					'opt_pagePath': window.location.href
 				});

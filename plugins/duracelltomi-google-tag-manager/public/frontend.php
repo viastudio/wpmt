@@ -1,6 +1,7 @@
 <?php
-define( 'GTM4WP_WPFILTER_COMPILE_DATALAYER', 'gtp4wp_compile_datalayer');
-define( 'GTM4WP_WPFILTER_COMPILE_REMARKTING', 'gtp4wp_compile_remarkering');
+define( 'GTM4WP_WPFILTER_COMPILE_DATALAYER', 'gtm4wp_compile_datalayer' );
+define( 'GTM4WP_WPFILTER_COMPILE_REMARKTING', 'gtm4wp_compile_remarkering' );
+define( 'GTM4WP_WPFILTER_GETTHEGTMTAG', 'gtm4wp_get_the_gtm_tag' );
 
 if ( $GLOBALS[ "gtm4wp_options" ][ GTM4WP_OPTION_DATALAYER_NAME ] == "" ) {
 	$GLOBALS[ "gtm4wp_datalayer_name" ] = "dataLayer";
@@ -41,6 +42,10 @@ function gtm4wp_add_basic_datalayer_data( $dataLayer ) {
 	if ( $gtm4wp_options[ GTM4WP_OPTION_INCLUDE_USERROLE ] ) {
 		get_currentuserinfo();
 		$dataLayer["visitorType"] = ( $current_user->roles[0] == NULL ? "visitor-logged-out" : $current_user->roles[0] );
+	}
+
+	if ( $gtm4wp_options[ GTM4WP_OPTION_INCLUDE_USERID ] ) {
+		$dataLayer["visitorId"] = get_current_user_id();
 	}
 
 	if ( $gtm4wp_options[ GTM4WP_OPTION_INCLUDE_POSTTITLE ] ) {
@@ -169,22 +174,22 @@ function gtm4wp_add_basic_datalayer_data( $dataLayer ) {
 		$detected = new WhichBrowser( array( "headers" => getallheaders() ) );
 
 		if ( $gtm4wp_options[ GTM4WP_OPTION_INCLUDE_BROWSERDATA ] ) {
-			$dataLayer["browserName"]         = $detected->browser->name;
-			$dataLayer["browserVersion"]      = $detected->browser->version->value;
+			$dataLayer["browserName"]         = isset( $detected->browser->name ) ? $detected->browser->name : "";
+			$dataLayer["browserVersion"]      = isset( $detected->browser->version->value ) ? $detected->browser->version->value : "";
 
-			$dataLayer["browserEngineName"]         = $detected->engine->name;
-			$dataLayer["browserEngineVersion"]      = $detected->engine->version->value;
+			$dataLayer["browserEngineName"]         = isset( $detected->engine->name ) ? $detected->engine->name : "";
+			$dataLayer["browserEngineVersion"]      = isset( $detected->engine->version->value ) ? $detected->engine->version->value : "";
 		}
 
 		if ( $gtm4wp_options[ GTM4WP_OPTION_INCLUDE_OSDATA ] ) {
-			$dataLayer["osName"]         = $detected->os->name;
-			$dataLayer["osVersion"]      = $detected->os->version->value;
+			$dataLayer["osName"]         = isset( $detected->os->name ) ? $detected->os->name : "";
+			$dataLayer["osVersion"]      = isset( $detected->os->version->value ) ? $detected->os->version->value : "";
 		}
 
 		if ( $gtm4wp_options[ GTM4WP_OPTION_INCLUDE_DEVICEDATA ] ) {
-			$dataLayer["deviceType"]         = $detected->device->type;
-			$dataLayer["deviceManufacturer"] = $detected->device->manufacturer;
-			$dataLayer["deviceModel"]        = $detected->device->model;
+			$dataLayer["deviceType"]         = isset( $detected->device->type ) ? $detected->device->type : "";
+			$dataLayer["deviceManufacturer"] = isset( $detected->device->manufacturer ) ? $detected->device->manufacturer : "";
+			$dataLayer["deviceModel"]        = isset( $detected->device->model ) ? $detected->device->model : "";
 		}
 	}
 
@@ -390,7 +395,7 @@ j=d.createElement(s),dl=l!=\'' . $gtm4wp_datalayer_name . '\'?\'&l=\'+l:\'\';j.a
 <!-- End Google Tag Manager -->';
 	}
 
-	return $_gtm_tag;
+	return apply_filters( GTM4WP_WPFILTER_GETTHEGTMTAG, $_gtm_tag );
 }
 
 function gtm4wp_the_gtm_tag() {
@@ -456,9 +461,7 @@ function gtm4wp_wp_header_begin() {
 <!-- Google Tag Manager for WordPress by DuracellTomi - http://duracelltomi.com -->
 <script type="text/javascript">
 	var gtm4wp_datalayer_name = "' . $gtm4wp_datalayer_name . '";
-	if ( "undefined" == typeof '.$gtm4wp_datalayer_name.' ) {
-		' . $gtm4wp_datalayer_name . ' = new Array();
-	}';
+	var ' . $gtm4wp_datalayer_name . ' = ' . $gtm4wp_datalayer_name . ' || []';
 	
 	if ( $gtm4wp_options[ GTM4WP_OPTION_SCROLLER_ENABLED ] ) {
 		$_gtm_header_content .= '

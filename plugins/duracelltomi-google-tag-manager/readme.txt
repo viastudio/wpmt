@@ -4,7 +4,7 @@ Donate link: http://duracelltomi.com/
 Tags: google tag manager, tag manager, gtm, google, adwords, google adwords, adwords remarketing, remarketing, google analytics, analytics
 Requires at least: 3.0.1
 Tested up to: 4.1
-Stable tag: 0.8.2
+Stable tag: 0.9
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -31,6 +31,7 @@ very easily since you can fire them using rules that include
 * post count on the current page + in the current category/tag/taxonomy
 * logged in status
 * logged in user role
+* logged in user ID (to track cross device behavior in Google Analytics)
 * search data
 
 Use search data to generate Analytics events when an empty search result is being shown.
@@ -140,23 +141,24 @@ More integration to come!
 
 = How can I implement enhanced e-commerce in Google Tag Manager =
 
-First of all please remember that this feature of this plugin is still experimental and the feature of Google Analytics
-is still in beta. Therefore it is recommended to create a separate web property to be used with enhanced e-commerce
-in paralel to you current "classic" e-commerce tracking.
+I created a step-by-step guide for this:
+http://duracelltomi.com/google-tag-manager-for-wordpress/how-to-articles/setup-enhanced-ecommerce-tracking
 
-To be able to implement the necessary tags just follow the instructions shown on the official documentation of Google:
-https://developers.google.com/tag-manager/enhanced-ecommerce
+= PayPal transactions in WooCommerce are not being tracked in Google Analyics =
 
-There is only one thing you have to change: event names:
+PayPal does not redirect the user back to your website by default.
+It offers the route back for your customer but it can happen that users simply close the browser
+before they get back to your thankyou page (aka. order received page)
 
-* productClick -> gtm4wp.productClick
-* addToCart -> gtm4wp.addProductToCart
-* removeFromCart -> gtm4wp.removeProductFromCart
-* promotionClick -> gtm4wp.promotionClick
+This means that neither Google Analyics tags or any other tags are being fired.
 
-= Why isn't there an option do blacklist tag/macro classes =
+Enable auto return in your PayPal settings. This will instruct PayPal to show a quick
+info page after payment and then redirect the user back to your site. This will
+increase the number of tracked transactions.
 
-Although Google recommends to blacklist tags and macros using classes, I found it complicated for people to understand
+= Why isn't there an option to blacklist tag/macro classes =
+
+Although Google recommends to blacklist tags and macros using classes, I found it is complicated for people to understand
 what tags and macros are being blacklisted/whitelisted automatically using classses. Therefore I decided to include
 individual tags and macros on the blacklist tabs.
 
@@ -165,7 +167,7 @@ with any macro in your container.
 
 = How can I track add-to-cart events in WooCommerce =
 
-To track add-to-cart events you have to catch the dataLayer event gtm4wp.addProductToCart
+To track add-to-cart events using classic transactions you have to catch the dataLayer event gtm4wp.addProductToCart
 
 There are 3 additional dataLayer variables that can be accessed during the event using classic ecommerce tracking:
 
@@ -244,6 +246,16 @@ If you or your social plugin inserts the Facebook buttons using IFRAME-s (like S
 
 == Changelog ==
 
+= 0.9 =
+
+* Added: visitorId dataLayer variable with the ID of the currently logged in user to track userID in Google Analytics
+* Added: WordPress filter hook so that other templates and plugins can get access to the GTM container code before outputting it
+* Fixed: 'variation incorrect' issue by Sharken03
+* Fixed: error messages in WooCommerce integration when product has no categories
+* Fixed: add_inline_js errors in newer versions of WooCommerce
+* Fixed: error message when some device/browser/OS data could not be set
+* Fixed: tracking Twitter events was broken
+
 = 0.8.2 =
 
 * Fixed: broken links when listing subcategories instead of products (thanks Jon)
@@ -319,6 +331,10 @@ If you or your social plugin inserts the Facebook buttons using IFRAME-s (like S
 * First beta release
 
 == Upgrade Notice ==
+
+= 0.9 =
+
+Many bug fixes, important fixes for WooCommerce users
 
 = 0.8.2 =
 

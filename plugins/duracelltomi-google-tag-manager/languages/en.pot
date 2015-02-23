@@ -393,7 +393,7 @@ msgid "Scroller time"
 msgstr ""
 
 msgid ""
-"Enter the number of milliseconds after the the scroller user is being "
+"Enter the number of seconds after the the scroller user is being "
 "treated as a reader, someone who really reads the content, not just scrolls "
 "through it."
 msgstr ""
@@ -659,4 +659,10 @@ msgid ""
 msgstr ""
 
 msgid "Select which temperature units you would like to use."
+msgstr ""
+
+msgid "Logged in user ID"
+msgstr ""
+
+msgid "Check this option to include the ID of the logged in user."
 msgstr ""
