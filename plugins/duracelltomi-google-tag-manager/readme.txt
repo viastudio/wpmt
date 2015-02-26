@@ -4,7 +4,7 @@ Donate link: http://duracelltomi.com/
 Tags: google tag manager, tag manager, gtm, google, adwords, google adwords, adwords remarketing, remarketing, google analytics, analytics
 Requires at least: 3.0.1
 Tested up to: 4.1
-Stable tag: 0.9
+Stable tag: 0.9.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -246,6 +246,10 @@ If you or your social plugin inserts the Facebook buttons using IFRAME-s (like S
 
 == Changelog ==
 
+= 0.9.1 =
+
+* Fixed: PHP error message: missing get_shipping function using WooCommerce 2.3.x
+
 = 0.9 =
 
 * Added: visitorId dataLayer variable with the ID of the currently logged in user to track userID in Google Analytics
@@ -331,6 +335,10 @@ If you or your social plugin inserts the Facebook buttons using IFRAME-s (like S
 * First beta release
 
 == Upgrade Notice ==
+
+= 0.9.1 =
+
+Bugfix release for WooCommerce users with ecommerce tracking enabled
 
 = 0.9 =
 

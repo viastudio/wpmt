@@ -449,7 +449,7 @@ function gtm4wp_wp_footer() {
 function gtm4wp_wp_body_open() {
 	global $gtm4wp_options;
 
-	if ( GTM4WP_PLACEMENT_CUSTOM == $gtm4wp_options[ GTM4WP_OPTION_GTM_PLACEMENT ] ) {
+	if ( GTM4WP_PLACEMENT_BODYOPEN == $gtm4wp_options[ GTM4WP_OPTION_GTM_PLACEMENT ] ) {
 		gtm4wp_the_gtm_tag();
 	}
 }

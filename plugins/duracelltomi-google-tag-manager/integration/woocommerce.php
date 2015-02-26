@@ -158,7 +158,7 @@ function gtm4wp_woocommerce_datalayer_filter_items( $dataLayer ) {
 			}
 
 			if ( true === $gtm4wp_options[ GTM4WP_OPTION_INTEGRATE_WCTRACKENHANCEDEC ] ) {
-				$dataLayer["ecommerce"] = "-~-{'purchase': {'actionField': {'id': '" . $order->get_order_number() . "', 'affiliation': '" . get_bloginfo( 'name' ) . "', 'revenue': '" . $order->get_total() . "', 'tax': '" . $order->get_total_tax() . "', 'shipping': '" . $order->get_shipping() . "'}, ";
+				$dataLayer["ecommerce"] = "-~-{'purchase': {'actionField': {'id': '" . $order->get_order_number() . "', 'affiliation': '" . get_bloginfo( 'name' ) . "', 'revenue': '" . $order->get_total() . "', 'tax': '" . $order->get_total_tax() . "', 'shipping': '" . $order->get_total_shipping() . "'}, ";
 			}
 
 			$_products = array();
