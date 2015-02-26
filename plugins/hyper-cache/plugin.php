@@ -4,16 +4,12 @@
   Plugin Name: Hyper Cache
   Plugin URI: http://www.satollo.net/plugins/hyper-cache
   Description: A easy to configure and efficient cache to increase the speed of your blog.
-  Version: 3.1.9
+  Version: 3.2.1
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
   Contributors: satollo
  */
-
-if (!defined('HYPER_CACHE_LOG')) {
-    define('HYPER_CACHE_LOG', false);
-}
 
 if (isset($_GET['cache'])) {
     if ($_GET['cache'] === '0') {
@@ -82,13 +78,13 @@ class HyperCache {
         }
     }
 
-    function log($object) {
-        if (is_object($object) || is_array($object)) {
-            $object = print_r($object, true);
-        }
-        //file_put_contents(WP_CONTENT_DIR . '/logs/hyper-cache.log', $object, FILE_APPEND);
-        error_log($object);
-    }
+//    function log($object) {
+//        if (is_object($object) || is_array($object)) {
+//            $object = print_r($object, true);
+//        }
+//        //file_put_contents(WP_CONTENT_DIR . '/logs/hyper-cache.log', $object, FILE_APPEND);
+//        error_log($object);
+//    }
 
     function hook_activate() {
         if (!is_dir(WP_CONTENT_DIR . '/logs')) {
@@ -223,8 +219,6 @@ class HyperCache {
     }
 
     function hook_comment_post($comment_id, $status) {
-        if (HYPER_CACHE_LOG)
-            $this->log('Hook: comment_post');
         if ($status === 1) {
             $comment = get_comment($comment_id);
             $this->clean_post($comment->comment_post_ID, isset($this->options['clean_archives_on_comment']), isset($this->options['clean_archives_on_comment']));
@@ -232,8 +226,6 @@ class HyperCache {
     }
 
     function hook_wp_update_comment_count($post_id) {
-        if (HYPER_CACHE_LOG)
-            $this->log('Hook: wp_update_comment_count');
         if ($this->post_id == $post_id) {
             return;
         }
@@ -241,8 +233,6 @@ class HyperCache {
     }
 
     function hook_save_post($post_id) {
-        if (HYPER_CACHE_LOG)
-            $this->log('Hook: save_post');
     }
 
     /**
@@ -250,34 +240,22 @@ class HyperCache {
      * edit_post like if the post has been modified.
      */
     function hook_edit_post($post_id) {
-        if (HYPER_CACHE_LOG)
-            $this->log('Hook: edit_post');
         $this->clean_post($post_id, isset($this->options['clean_archives_on_post_edit']), isset($this->options['clean_home_on_post_edit']));
     }
 
     function clean_post($post_id, $clean_archives = true, $clean_home = true) {
-        if (HYPER_CACHE_LOG)
-            $this->log('Cleaning post ' . $post_id);
+
         // When someone deletes the advaced-cache.php file
         if (!function_exists('hyper_cache_sanitize_uri')) {
-            if (HYPER_CACHE_LOG)
-                $this->log('hyper_cache_sanitize_uri does not exists');
             return;
         }
 
         if ($this->post_id == $post_id) {
-            if (HYPER_CACHE_LOG)
-                $this->log('Already cleaned in this session');
             return;
         }
 
         $status = get_post_status($post_id);
-        if (HYPER_CACHE_LOG)
-            $this->log('Status: ' . $status);
         if ($status != 'publish' && $status != 'trash') {
-            if (HYPER_CACHE_LOG)
-                $this->log('Post not published');
-            //$this->log('Not a published post');
             return;
         }
 
@@ -303,12 +281,7 @@ class HyperCache {
         $dir = $folder . substr(get_option('home'), strpos(get_option('home'), '://') + 3);
 
         if ($clean_home) {
-            if (HYPER_CACHE_LOG)
-                $this->log('Cleaning the home');
 
-            // The home
-            if (HYPER_CACHE_LOG)
-                $this->log('Cleaning the home index*');
             @unlink($dir . '/index.html');
             @unlink($dir . '/index.html.gz');
             @unlink($dir . '/index-https.html');
@@ -325,8 +298,6 @@ class HyperCache {
 
         //@unlink($dir . '/robots.txt');
         if ($clean_archives) {
-            if (HYPER_CACHE_LOG)
-                $this->log('Cleaning archives');
 
             $base = get_option('category_base');
             if (empty($base)) {
@@ -385,10 +356,6 @@ class HyperCache {
 
     function hook_template_redirect() {
         global $cache_stop, $hyper_cache_stop, $lite_cache_stop;
-
-        if (HYPER_CACHE_LOG) {
-            $this->log('hook_template_redirect');
-        }
 
         if ($this->ob_started) {
             return;
@@ -505,8 +472,6 @@ class HyperCache {
     }
 
     function remove_page($dir) {
-        if (HYPER_CACHE_LOG)
-            $this->log('Removing page: ' . $dir);
         $dir = untrailingslashit($dir);
         @unlink($dir . '/index.html');
         @unlink($dir . '/index.html.gz');
@@ -523,9 +488,6 @@ class HyperCache {
     }
 
     function remove_dir($dir) {
-        if (HYPER_CACHE_LOG) {
-            $this->log('Removing dir: ' . $dir);
-        }
         $dir = trailingslashit($dir);
         $files = glob($dir . '*', GLOB_MARK);
         if (!empty($files)) {
@@ -544,16 +506,10 @@ class HyperCache {
         if (!isset($this->options['autoclean'])) {
             return;
         }
-        if (HYPER_CACHE_LOG) {
-            $this->log('Periodic cache cleaning start');
-        }
         if ($this->options['max_age'] == 0) {
             return;
         }
         $this->remove_older_than(time() - $this->options['max_age'] * 3600);
-        if (HYPER_CACHE_LOG) {
-            $this->log('Periodic cache cleaning stop');
-        }
     }
 
     function remove_older_than($time) {
@@ -645,7 +601,7 @@ function hyper_cache_callback($buffer) {
 
         $buffer = preg_replace_callback("#(<img.+src=[\"'])(" . $base . ".*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
         $buffer = preg_replace_callback("#(<script.+src=[\"'])(" . $base . ".*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
-        $buffer = preg_replace_callback("#(<link.+href=[\"'])(" . $base . ".*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
+        $buffer = preg_replace_callback("#(<link.+href=[\"'])(" . $base . ".*\.css.*)([\"'])#U", 'hyper_cache_cdn_callback', $buffer);
     }
 
     $buffer = apply_filters('cache_buffer', $buffer);
@@ -732,20 +688,13 @@ function hyper_cache_callback($buffer) {
 if (!function_exists('hyper_cache_sanitize_uri')) {
 
     function hyper_cache_sanitize_uri($uri) {
-        if (HYPER_CACHE_LOG) {
-            $this->log('URI: ' . $uri);
-        }
         $uri = preg_replace('/[^a-zA-Z0-9\/\-_]+/', '_', $uri);
         $uri = preg_replace('/\/+/', '/', $uri);
-        //$uri = rtrim($uri, '.-_/');
         if (empty($uri) || $uri[0] != '/') {
             $uri = '/' . $uri;
         }
         if (strlen($uri) > 1 && substr($uri, -1, 1) == '/') {
             $uri = rtrim($uri, '/') . '_';
-        }
-        if (HYPER_CACHE_LOG) {
-            $this->log('Sanitized URI: ' . $uri);
         }
         return $uri;
     }
