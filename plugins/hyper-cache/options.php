@@ -128,7 +128,7 @@ if ($controls->is_action('clean-home')) {
 }
 
 if ($controls->is_action('delete')) {
-    delete_option('hyper-cahe');
+    delete_option('hyper-cache');
     $controls->messages = __('Options deleted', 'hyper-cache');
 }
 
@@ -260,6 +260,8 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
         <a href="http://www.satollo.net/plugins/header-footer?utm_source=hyper-cache&utm_medium=banner&utm_campaign=header-footer" target="_blank"><img src="http://www.satollo.net/images/plugins/header-footer-icon.png"></a>
         <a href="http://www.satollo.net/plugins/include-me?utm_source=hyper-cache&utm_medium=banner&utm_campaign=include-me" target="_blank"><img src="http://www.satollo.net/images/plugins/include-me-icon.png"></a>
         <a href="http://www.thenewsletterplugin.com/?utm_source=hyper-cache&utm_medium=banner&utm_campaign=newsletter" target="_blank"><img src="http://www.satollo.net/images/plugins/newsletter-icon.png"></a>
+        <a href="http://www.satollo.net/plugins/mailer?utm_source=hyper-cache&utm_medium=banner&utm_campaign=mailer" target="_blank"><img src="http://www.satollo.net/images/plugins/mailer-icon.png"></a>
+        <a href="http://www.satollo.net/plugins/php-text-widget?utm_source=hyper-cache&utm_medium=banner&utm_campaign=php-text-widget" target="_blank"><img src="http://www.satollo.net/images/plugins/php-text-widget-icon.png"></a>
     </p>
 
 

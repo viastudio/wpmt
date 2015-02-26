@@ -63,6 +63,15 @@ the [Hyper Cache official forum](http://www.satollo.net/forums/forum/hyper-cache
 
 == Changelog ==
 
+= 3.2.1 =
+
+* Fixed link rel canonica rewrite with the cdn active
+
+= 3.2.0 =
+
+* Links
+* Fixed the options delete function
+
 = 3.1.9 =
 
 * Fixed translations
