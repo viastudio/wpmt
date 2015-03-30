@@ -110,6 +110,7 @@ abstract class GFAddOn {
 	function __construct() {
 
 		add_action( 'init', array( $this, 'init' ) );
+
 		if ( $this->_enable_rg_autoupgrade ) {
 			require_once( 'class-gf-auto-upgrade.php' );
 			$is_gravityforms_supported = $this->is_gravityforms_supported( $this->_min_gravityforms_version );
@@ -1024,12 +1025,12 @@ abstract class GFAddOn {
 	 * @param array $field - The field to be rendered
 	 */
 	protected function single_setting( $field ) {
-		if ( is_callable( rgar( $field, 'callback' ) ) ) {
-			call_user_func( $field['callback'], $field );
-		} else if ( is_callable( array( $this, "settings_{$field['type']}" ) ) ) {
-			call_user_func( array( $this, "settings_{$field['type']}" ), $field );
+		if( is_callable( rgar( $field, 'callback' ) ) ) {
+			call_user_func($field["callback"], $field);
+		} else if (is_callable(array($this, "settings_{$field["type"]}"))) {
+			call_user_func(array($this, "settings_{$field["type"]}"), $field);
 		} else {
-			printf( __( "Field type '%s' has not been implemented", 'gravityforms' ), $field['type'] );
+			printf(__("Field type '%s' has not been implemented", "gravityforms"), $field["type"] );
 		}
 	}
 
@@ -1906,6 +1907,11 @@ abstract class GFAddOn {
 				}
 			} elseif ( ! rgar( $field, 'displayOnly' ) ) {
 				$fields[] = array( 'value' => $field->id, 'label' => GFCommon::get_label( $field ) );
+			} else{
+				$fields[] = array(
+					'value' => $field->id,
+					'label' => GFCommon::get_label( $field )
+				);
 			}
 		}
 
@@ -2538,7 +2544,7 @@ abstract class GFAddOn {
 
 		if ( $this->is_save_postback() ) {
 
-			// store a copy of the previous settings for cases where action whould only happen if value has changed
+			// store a copy of the previous settings for cases where action would only happen if value has changed
 			$this->set_previous_settings( $this->get_form_settings( $form ) );
 
 			$settings = $this->get_posted_settings();
@@ -3699,7 +3705,7 @@ abstract class GFAddOn {
 	 *
 	 * @return string
 	 */
-	protected function get_base_url( $full_path = '' ) {
+	public function get_base_url( $full_path = '' ) {
 		if ( empty( $full_path ) )
 			$full_path = $this->_full_path;
 
@@ -3731,7 +3737,7 @@ abstract class GFAddOn {
 	 *
 	 * @return string
 	 */
-	protected function get_base_path( $full_path = '' ) {
+	public function get_base_path( $full_path = '' ) {
 		if ( empty( $full_path ) )
 			$full_path = $this->_full_path;
 		$folder = basename( dirname( $full_path ) );

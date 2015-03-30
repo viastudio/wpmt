@@ -85,7 +85,9 @@ abstract class GFLocking {
 	 * @return bool
 	 */
 	protected function get_object_id() {
-		return rgget( 'id' ); // example in the case of form id
+		$id = rgget( 'id' );
+		$id = absint( $id );
+		return $id; // example in the case of form id
 	}
 
 	public function init_edit_lock() {
@@ -322,11 +324,11 @@ abstract class GFLocking {
 	public function maybe_lock_object( $is_edit_page ) {
 		if ( isset( $_GET['get-edit-lock'] ) ) {
 			$this->set_lock( $this->_object_id );
-			wp_redirect( $this->_edit_url );
+			wp_safe_redirect( $this->_edit_url );
 			exit();
 		} else if ( isset( $_GET['release-edit-lock'] ) ) {
 			$this->delete_lock_meta( $this->_object_id );
-			wp_redirect( $this->_redirect_url );
+			wp_safe_redirect( $this->_redirect_url );
 			exit();
 		} else {
 			if ( $is_edit_page && ! $user_id = $this->check_lock( $this->_object_id ) ) {
