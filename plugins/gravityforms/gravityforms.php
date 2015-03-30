@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms
 Plugin URI: http://www.gravityforms.com
 Description: Easily create web forms and manage form entries within the WordPress admin.
-Version: 1.9.2
+Version: 1.9.5
 Author: rocketgenius
 Author URI: http://www.rocketgenius.com
 Text Domain: gravityforms
@@ -112,7 +112,7 @@ add_action( 'plugins_loaded', array( 'GFForms', 'loaded' ) );
 
 class GFForms {
 
-	public static $version = '1.9.2';
+	public static $version = '1.9.5';
 
 	public static function loaded() {
 
@@ -355,9 +355,15 @@ class GFForms {
 
 	//Creates or updates database tables. Will only run when version changes
 	public static function setup( $force_setup = false ) {
-		global $wpdb;
 
-		$has_version_changed = get_option( 'rg_form_version' ) != GFCommon::$version;
+		$current_version = get_option( 'rg_form_version' );
+
+		if ( $current_version === false ){
+			// Turn background updates on by default for all new installations.
+			update_option( 'gform_enable_background_updates', true );
+		}
+
+		$has_version_changed = $current_version != GFCommon::$version;
 		if ( $has_version_changed ) {
 			//Making sure version has really changed. Gets around aggressive caching issue on some sites that cause setup to run multiple times.
 			$has_version_changed = self::get_wp_option( 'rg_form_version' ) != GFCommon::$version;
@@ -1439,6 +1445,9 @@ class GFForms {
 			if ( substr( $page_text, 0, 10 ) != '<!--GFM-->' ) {
 				$page_text = '';
 			}
+			else {
+				$page_text = '<div style="background-color:white">' . $page_text . '<div>';
+			}
 		}
 
 		return stripslashes( $page_text );
@@ -1586,7 +1595,7 @@ class GFForms {
 		wp_register_script( 'gform_tooltip_init', $base_url . '/js/tooltip_init.js', array( 'jquery-ui-tooltip' ), $version );
 		wp_register_script( 'gform_textarea_counter', $base_url . '/js/jquery.textareaCounter.plugin.js', array( 'jquery' ), $version );
 		wp_register_script( 'gform_field_filter', $base_url . '/js/gf_field_filter.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_shortcode_ui', $base_url . '/js/shortcode-ui.js', array( 'jquery', 'backbone', 'mce-view' ), $version, true );
+		wp_register_script( 'gform_shortcode_ui', $base_url . '/js/shortcode-ui.js', array( 'jquery', 'wp-backbone' ), $version, true );
 
 		wp_register_style( 'gform_shortcode_ui', $base_url . '/css/shortcode-ui.css', array(), $version );
 
@@ -1748,23 +1757,19 @@ class GFForms {
 
 		}
 
-
 		if ( self::page_supports_add_form_button() ) {
 			// add_filter( 'gform_shortcode_preview_disabled', '__return_false' );
-			$screen = get_current_screen();
-			if ( ! $screen instanceof WP_Screen || $screen->post_type != 'attachment' ) {
-				require_once( GFCommon::get_base_path() . '/tooltips.php' );
-				wp_enqueue_script( 'gform_shortcode_ui' );
-				wp_enqueue_style( 'gform_shortcode_ui' );
-				wp_localize_script( 'gform_shortcode_ui', 'gfShortcodeUIData', array(
-					'shortcodes' => self::get_shortcodes(),
-					'previewNonce' => wp_create_nonce( 'gf-shortcode-ui-preview' ),
-					'previewDisabled' => apply_filters( 'gform_shortcode_preview_disabled', true ),
-					'strings' => array(
-						'pleaseSelectAForm' => __( 'Please select a form.', 'gravityforms' ),
-					)
-				) );
-			}
+			require_once( GFCommon::get_base_path() . '/tooltips.php' );
+			wp_enqueue_script( 'gform_shortcode_ui' );
+			wp_enqueue_style( 'gform_shortcode_ui' );
+			wp_localize_script( 'gform_shortcode_ui', 'gfShortcodeUIData', array(
+				'shortcodes' => self::get_shortcodes(),
+				'previewNonce' => wp_create_nonce( 'gf-shortcode-ui-preview' ),
+				'previewDisabled' => apply_filters( 'gform_shortcode_preview_disabled', true ),
+				'strings' => array(
+					'pleaseSelectAForm' => __( 'Please select a form.', 'gravityforms' ),
+				)
+			) );
 		}
 
 		if ( empty( $scripts ) ) {
@@ -2760,7 +2765,10 @@ class GFForms {
 
 	public static function is_auto_update_disabled(){
 
-		// Background updates are disabled if you don't want file changes.
+		// Currently WordPress won't ask Gravity Forms to update if background updates are disabled.
+		// Let's double check anyway.
+
+		// WordPress background updates are disabled if you don't want file changes.
 		if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ){
 			return true;
 		}
@@ -2768,6 +2776,17 @@ class GFForms {
 		if ( defined( 'WP_INSTALLING' ) ){
 			return true;
 		}
+
+		$wp_updates_disabled = defined( 'AUTOMATIC_UPDATER_DISABLED' ) && AUTOMATIC_UPDATER_DISABLED;
+
+		$wp_updates_disabled = apply_filters( 'automatic_updater_disabled', $wp_updates_disabled );
+
+		if ( $wp_updates_disabled ) {
+			GFCommon::log_debug( __METHOD__ . '() - Background updates are disabled in WordPress.' );
+			return true;
+		}
+
+		// Now check Gravity Forms Background Update Settings
 
 		$enabled = get_option( 'gform_enable_background_updates' );
 		GFCommon::log_debug( 'GFForms::is_auto_update_disabled() - $enabled: ' . var_export( $enabled, true ) );
@@ -3108,5 +3127,29 @@ if ( ! function_exists( 'rgexplode' ) ) {
 		}
 
 		return $ary;
+	}
+}
+
+if( ! function_exists( 'gf_apply_filters' ) ) {
+	function gf_apply_filters( $filter, $modifiers, $value ) {
+
+		if( ! is_array( $modifiers ) ) {
+			$modifiers = array( $modifiers );
+		}
+
+		// add an empty modifier so the base filter will be applied as well
+		array_unshift( $modifiers, '' );
+
+		$args = array_slice( func_get_args(), 3 );
+		$args = array_pad( $args, 10, null );
+
+		// apply modified versions of filter
+		foreach( $modifiers as $modifier ) {
+			$modifier = empty( $modifier ) ? '' : sprintf( '_%s', $modifier );
+			$filter  .= $modifier;
+			$value    = apply_filters( $filter, $value, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9] );
+		}
+
+		return $value;
 	}
 }

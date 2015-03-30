@@ -17,7 +17,18 @@ class GFFormDisplay {
 		GFCommon::log_debug( "GFFormDisplay::process_form(): Starting to process form (#{$form_id}) submission." );
 
 		//reading form metadata
-		$form = RGFormsModel::get_form_meta( $form_id );
+		$form = GFAPI::get_form( $form_id );
+
+		if ( ! $form['is_active'] || $form['is_trash'] ) {
+			return;
+		}
+
+		if ( rgar( $form, 'requireLogin' ) ) {
+			if ( ! is_user_logged_in() ) {
+				return;
+			}
+			check_admin_referer( 'gform_submit_' . $form_id, '_gform_submit_nonce_' . $form_id );
+		}
 
 		//pre process action
 		do_action( 'gform_pre_process', $form );
@@ -197,7 +208,7 @@ class GFFormDisplay {
 				continue;
 			}
 
-			if ( $field->failed_validation || empty( $_FILES[ $input_name ]['name'] )) {
+			if ( $field->failed_validation || empty( $_FILES[ $input_name ]['name'] ) ) {
 				GFCommon::log_debug( "GFFormDisplay::upload_files(): Skipping field: {$field->label}({$field->id} - {$field->type})." );
 				continue;
 			}
@@ -501,8 +512,8 @@ class GFFormDisplay {
 		if ( isset( $_POST['gform_send_resume_link'] ) ) {
 			$save_email_confirmation = self::handle_save_email_confirmation( $form, $ajax );
 			if ( is_wp_error( $save_email_confirmation ) ) { // Failed email validation
-				$resume_token = rgpost('gform_resume_token');
-				$incomplete_submission_info = GFFormsModel::get_incomplete_submission_values( rgpost('gform_resume_token') );
+				$resume_token = rgpost( 'gform_resume_token' );
+				$incomplete_submission_info = GFFormsModel::get_incomplete_submission_values( rgpost( 'gform_resume_token' ) );
 				if ( $incomplete_submission_info['form_id'] == $form_id ) {
 					$submission_details_json                = $incomplete_submission_info['submission'];
 					$submission_details                     = json_decode( $submission_details_json, true );
@@ -806,7 +817,7 @@ class GFFormDisplay {
 							'var is_form = form_content.length > 0 && ! is_redirect && ! is_confirmation;' .
 							'if(is_form){' .
 								"jQuery('#gform_wrapper_{$form_id}').html(form_content.html());" .
-								"{$scroll_position['default']}" .
+				                "setTimeout( function() { /* delay the scroll by 50 milliseconds to fix a bug in chrome */ {$scroll_position['default']} }, 50 );" .
 								"if(window['gformInitDatepicker']) {gformInitDatepicker();}" .
 								"if(window['gformInitPriceFields']) {gformInitPriceFields();}" .
 								"var current_page = jQuery('#gform_source_page_number_{$form_id}').val();" .
@@ -951,7 +962,7 @@ class GFFormDisplay {
 	}
 
 	private static function gform_footer( $form, $class, $ajax, $field_values, $previous_button, $display_title, $display_description, $tabindex = 1 ) {
-		$form_id      = $form['id'];
+		$form_id      = absint( $form['id'] );
 		$footer       = "
         <div class='" . $class . "'>";
 		$button_input = self::get_form_button( $form['id'], "gform_submit_button_{$form['id']}", $form['button'], __( 'Submit', 'gravityforms' ), 'gform_button', __( 'Submit', 'gravityforms' ), 0 );
@@ -980,6 +991,10 @@ class GFFormDisplay {
 			$resume_token = isset( $_POST['gform_resume_token'] ) ? $_POST['gform_resume_token'] : rgget( 'gf_token' );
 			$save_inputs  = "<input type='hidden' class='gform_hidden' name='gform_save' id='gform_save_{$form_id}' value='' />
                              <input type='hidden' class='gform_hidden' name='gform_resume_token' id='gform_resume_token_{$form_id}' value='{$resume_token}' />";
+		}
+
+		if ( rgar( $form, 'requireLogin' ) ) {
+			$footer .= wp_nonce_field( 'gform_submit_' . $form_id, '_gform_submit_nonce_' . $form_id, true, false );
 		}
 
 		$unique_id = isset( self::$submission[ $form_id ] ) && rgar( self::$submission[ $form_id ], 'resuming_incomplete_submission' ) == true ? rgar( GFFormsModel::$unique_ids, $form_id ) : GFFormsModel::get_form_unique_id( $form_id );
@@ -2252,7 +2267,7 @@ class GFFormDisplay {
                 </div>
                 <div id='gform_page_{$form['id']}_{$field->pageNumber}' class='gform_page{$custom_class}' {$style}>
                     <div class='gform_page_fields'>
-                        <ul id='gform_fields_{$form['id']}' class='" . GFCommon::get_ul_classes( $form ) . "'>";
+                        <ul id='gform_fields_{$form['id']}_{$field->pageNumber}' class='" . GFCommon::get_ul_classes( $form ) . "'>";
 
 				return $html;
 			}
@@ -2309,7 +2324,7 @@ class GFFormDisplay {
 
 		$css_class = apply_filters( "gform_field_css_class_{$form['id']}", apply_filters( 'gform_field_css_class', trim( $css_class ), $field, $form ), $field, $form );
 
-		$style = ! empty( $form ) && ! $is_admin && RGFormsModel::is_field_hidden( $form, $field, $field_values ) ? "style='display:none;'" : '';
+		$style = '';
 
 		$field_id = $is_admin || empty( $form ) ? "field_$id" : 'field_' . $form['id'] . "_$id";
 
@@ -2368,7 +2383,7 @@ class GFFormDisplay {
 		}
 
 		if ( $input_type == 'creditcard' && ! GFCommon::is_ssl() && ! $is_admin ) {
-			$field_content = "<div class='gfield_creditcard_warning_message'>" . __( 'This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes. ', 'gravityforms' ) . '</div>' . $field_content;
+			$field_content = "<div class='gfield_creditcard_warning_message'><span>" . __( 'This page is unsecured. Do not enter a real credit card number! Use this field only for testing purposes. ', 'gravityforms' ) . '</span></div>' . $field_content;
 		}
 
 		$value = $field->get_value_default_if_empty( $value );
@@ -2526,6 +2541,7 @@ class GFFormDisplay {
 	public static function process_send_resume_link() {
 
 		$form_id      = rgpost( 'gform_send_resume_link' );
+		$form_id      = absint( $form_id );
 		$email        = rgpost( 'gform_resume_email' );
 		$resume_token = rgpost( 'gform_resume_token' );
 
@@ -2537,6 +2553,13 @@ class GFFormDisplay {
 
 		if ( empty( $form ) ) {
 			return;
+		}
+
+		if ( rgar( $form, 'requireLogin' ) ) {
+			if ( ! is_user_logged_in() ) {
+				wp_die();
+			}
+			check_admin_referer( 'gform_send_resume_link', '_gform_send_resume_link_nonce' );
 		}
 
 		$incomplete_submission = GFFormsModel::get_incomplete_submission_values( $resume_token );
@@ -2608,6 +2631,12 @@ class GFFormDisplay {
 
 		$validation_message = ! is_null( $email ) && ! GFCommon::is_valid_email( $email ) ? sprintf( '<div class="validation_message">%s</div>', $resume_email_validation_message ) : '';
 
+		$nonce_input = '';
+
+		if ( rgar( $form, 'requireLogin' ) ) {
+			$nonce_input = wp_nonce_field( 'gform_send_resume_link', '_gform_send_resume_link_nonce', true, false );
+		}
+
 		$resume_form = "<div class='form_saved_message_emailform'>
 							<form action='{$action}' method='POST'>
 								<input type='{$html_input_type}' name='gform_resume_email' value='{$email_esc}'/>
@@ -2615,12 +2644,11 @@ class GFFormDisplay {
 								<input type='hidden' name='gform_send_resume_link' value='{$form_id}' />
 	                            <input type='submit' name='gform_send_resume_link_button' value='{$resume_submit_button_text}' />
 	                            {$validation_message}
+	                            {$nonce_input}
 							</form>
 	                    </div>";
 
 		$text = str_replace( '{save_email_input}', $resume_form, $text );
-
-
 
 		return $text;
 	}
@@ -2638,7 +2666,7 @@ class GFFormDisplay {
 		$entry              = $submission['partial_entry'];
 		$form               = self::update_confirmation( $form, $entry, 'form_save_email_sent' );
 
-		$confirmation            = '<div class="form_saved_message_sent">' . rgar( $form['confirmation'], 'message' ) . '</div>';
+		$confirmation            = '<div class="form_saved_message_sent"><span>' . rgar( $form['confirmation'], 'message' ) . '</span></div>';
 		$nl2br                   = rgar( $form['confirmation'], 'disableAutoformat' ) ? false : true;
 		$save_email_confirmation = self::replace_save_variables( $confirmation, $form, $resume_token, $resume_email );
 
@@ -2656,7 +2684,7 @@ class GFFormDisplay {
 	public static function handle_save_confirmation( $form, $resume_token, $confirmation_message, $ajax ) {
 		$resume_email = isset( $_POST['gform_resume_email'] ) ? $_POST['gform_resume_email'] : null;
 		$confirmation_message = self::replace_save_variables( $confirmation_message, $form, $resume_token, $resume_email );
-		$confirmation_message       = "<div class='form_saved_message'>" . $confirmation_message . '</div>';
+		$confirmation_message       = "<div class='form_saved_message'><span>" . $confirmation_message . '</span></div>';
 		if ( $ajax ) {
 			$confirmation_message = "<!DOCTYPE html><html><head><meta charset='UTF-8' /></head><body class='GF_AJAX_POSTBACK'>" . $confirmation_message . '</body></html>';
 		}
