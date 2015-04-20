@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms
 Plugin URI: http://www.gravityforms.com
 Description: Easily create web forms and manage form entries within the WordPress admin.
-Version: 1.9.5
+Version: 1.9.6
 Author: rocketgenius
 Author URI: http://www.rocketgenius.com
 Text Domain: gravityforms
@@ -112,7 +112,7 @@ add_action( 'plugins_loaded', array( 'GFForms', 'loaded' ) );
 
 class GFForms {
 
-	public static $version = '1.9.5';
+	public static $version = '1.9.6';
 
 	public static function loaded() {
 
@@ -583,8 +583,6 @@ class GFForms {
 		if ( ! is_dir( $upload_root ) ) {
 			return;
 		}
-
-		self::do_self_healing();
 
 		GFCommon::recursive_add_index_file( $upload_root );
 
@@ -1581,23 +1579,23 @@ class GFForms {
 		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 
 		wp_register_script( 'gform_chosen', $base_url . '/js/chosen.jquery.min.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_conditional_logic', $base_url . '/js/conditional_logic.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_datepicker_init', $base_url . '/js/datepicker.js', array( 'jquery', 'jquery-ui-datepicker', 'gform_gravityforms' ), $version, true );
-		wp_register_script( 'gform_floatmenu', $base_url . '/js/floatmenu_init.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_form_admin', $base_url . '/js/form_admin.js', array( 'jquery', 'jquery-ui-autocomplete', 'gform_placeholder' ), $version );
-		wp_register_script( 'gform_form_editor', $base_url . '/js/form_editor.js', array( 'jquery', 'gform_json', 'gform_placeholder' ), $version );
-		wp_register_script( 'gform_forms', $base_url . '/js/forms.js', array( 'jquery' ), $version );
+		wp_register_script( 'gform_conditional_logic', $base_url . "/js/conditional_logic{$min}.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_datepicker_init', $base_url . "/js/datepicker{$min}.js", array( 'jquery', 'jquery-ui-datepicker', 'gform_gravityforms' ), $version, true );
+		wp_register_script( 'gform_floatmenu', $base_url . "/js/floatmenu_init{$min}.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_form_admin', $base_url . "/js/form_admin{$min}.js", array( 'jquery', 'jquery-ui-autocomplete', 'gform_placeholder' ), $version );
+		wp_register_script( 'gform_form_editor', $base_url . "/js/form_editor{$min}.js", array( 'jquery', 'gform_json', 'gform_placeholder' ), $version );
+		wp_register_script( 'gform_forms', $base_url . "/js/forms{$min}.js", array( 'jquery' ), $version );
 		wp_register_script( 'gform_gravityforms', $base_url . "/js/gravityforms{$min}.js", array( 'jquery', 'gform_json' ), $version );
 		wp_register_script( 'gform_json', $base_url . '/js/jquery.json-1.3.js', array( 'jquery' ), $version, true );
 		wp_register_script( 'gform_masked_input', $base_url . '/js/jquery.maskedinput.min.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_menu', $base_url . '/js/menu.js', array( 'jquery' ), $version );
+		wp_register_script( 'gform_menu', $base_url . "/js/menu{$min}.js", array( 'jquery' ), $version );
 		wp_register_script( 'gform_placeholder', $base_url . '/js/placeholders.jquery.min.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_tooltip_init', $base_url . '/js/tooltip_init.js', array( 'jquery-ui-tooltip' ), $version );
+		wp_register_script( 'gform_tooltip_init', $base_url . "/js/tooltip_init{$min}.js", array( 'jquery-ui-tooltip' ), $version );
 		wp_register_script( 'gform_textarea_counter', $base_url . '/js/jquery.textareaCounter.plugin.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_field_filter', $base_url . '/js/gf_field_filter.js', array( 'jquery' ), $version );
-		wp_register_script( 'gform_shortcode_ui', $base_url . '/js/shortcode-ui.js', array( 'jquery', 'wp-backbone' ), $version, true );
+		wp_register_script( 'gform_field_filter', $base_url . "/js/gf_field_filter{$min}.js", array( 'jquery' ), $version );
+		wp_register_script( 'gform_shortcode_ui', $base_url . "/js/shortcode-ui{$min}.js", array( 'jquery', 'wp-backbone' ), $version, true );
 
-		wp_register_style( 'gform_shortcode_ui', $base_url . '/css/shortcode-ui.css', array(), $version );
+		wp_register_style( 'gform_shortcode_ui', $base_url . "/css/shortcode-ui{$min}.css", array(), $version );
 
 		// only required for WP versions prior to 3.3
 		wp_register_script( 'gf_thickbox', $base_url . '/js/thickbox.js', array(), $version );
@@ -1758,7 +1756,6 @@ class GFForms {
 		}
 
 		if ( self::page_supports_add_form_button() ) {
-			// add_filter( 'gform_shortcode_preview_disabled', '__return_false' );
 			require_once( GFCommon::get_base_path() . '/tooltips.php' );
 			wp_enqueue_script( 'gform_shortcode_ui' );
 			wp_enqueue_style( 'gform_shortcode_ui' );
@@ -1768,6 +1765,7 @@ class GFForms {
 				'previewDisabled' => apply_filters( 'gform_shortcode_preview_disabled', true ),
 				'strings' => array(
 					'pleaseSelectAForm' => __( 'Please select a form.', 'gravityforms' ),
+					'errorLoadingPreview' => __( 'Failed to load the preview for this form.', 'gravityforms' ),
 				)
 			) );
 		}
@@ -2736,7 +2734,7 @@ class GFForms {
 
 	public static function maybe_auto_update( $update, $item ) {
 
-		if ( $item->slug == 'gravityforms' ) {
+		if ( isset($item->slug) && $item->slug == 'gravityforms' ) {
 
 			GFCommon::log_debug( 'GFForms::maybe_auto_update() - Starting auto-update for gravityforms.' );
 
@@ -2895,14 +2893,16 @@ class GFForms {
 
 		$base_url = GFCommon::get_base_url();
 
-		$editor_styles = $base_url . '/css/shortcode-ui-editor-styles.css,';
-		$form_styles = $base_url . '/css/formsmain.css';
+		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+
+		$editor_styles = $base_url . "/css/shortcode-ui-editor-styles{$min}.css,";
+		$form_styles = $base_url . "/css/formsmain{$min}.css";
 
 		if ( isset( $init['content_css'] ) ) {
 			if ( empty( $init['content_css'] ) ) {
 				$init['content_css'] = '';
 			} elseif ( is_array( $init['content_css'] ) ) {
-				$init['content_css'][] = $base_url . '/css/shortcode-ui-editor-styles.css,';
+				$init['content_css'][] = $editor_styles;
 				$init['content_css'][] = $form_styles;
 				return $init;
 			} else {

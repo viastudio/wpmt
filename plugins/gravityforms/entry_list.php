@@ -247,7 +247,9 @@ class GFEntryList {
 					'value'    => $search,
 				),
 			)
-		)
+		);
+
+		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 		?>
 
 		<script type="text/javascript">
@@ -724,7 +726,7 @@ class GFEntryList {
 
 
 		</script>
-		<link rel="stylesheet" href="<?php echo GFCommon::get_base_url() ?>/css/admin.css" type="text/css" />
+		<link rel="stylesheet" href="<?php echo GFCommon::get_base_url() ?>/css/admin<?php echo $min; ?>.css" type="text/css" />
 		<style>
 			/*#TB_window { height: 400px !important; }
 			#TB_ajaxContent[style] { height: 370px !important; }*/

@@ -51,6 +51,17 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 
 	}
 
+	public function init() {
+
+		parent::init();
+
+		add_filter( 'gform_confirmation', array( $this, 'confirmation' ), 20, 4 );
+
+		add_filter( 'gform_validation', array( $this, 'validation' ), 20 );
+		add_filter( 'gform_entry_post_save', array( $this, 'entry_post_save' ), 10, 2 );
+
+	}
+
 	public function init_admin() {
 
 		parent::init_admin();
@@ -70,22 +81,11 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 		}
 	}
 
-	public function init_frontend() {
-
-		parent::init_frontend();
-
-		add_filter( 'gform_confirmation', array( $this, 'confirmation' ), 20, 4 );
-
-		add_filter( 'gform_validation', array( $this, 'validation' ), 20 );
-		add_filter( 'gform_entry_post_save', array( $this, 'entry_post_save' ), 10, 2 );
-
-	}
-
 	public function init_ajax() {
 		parent::init_ajax();
 
 		add_action( 'wp_ajax_gaddon_cancel_subscription', array( $this, 'ajax_cancel_subscription' ) );
-
+		add_action( 'gform_before_delete_field', array( $this, 'before_delete_field' ), 10, 2 );
 	}
 
 	protected function setup() {
@@ -530,8 +530,9 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 		//getting mapped field data
 		$billing_fields = $this->billing_info_fields();
 		foreach ( $billing_fields as $billing_field ) {
-			$field_name             = $billing_field['name'];
-			$form_data[ $field_name ] = rgpost( 'input_' . str_replace( '.', '_', rgar( $feed['meta'], "billingInformation_{$field_name}" ) ) );
+			$field_name               = $billing_field['name'];
+			$input_id                 = rgar( $feed['meta'], "billingInformation_{$field_name}" );
+			$form_data[ $field_name ] = rgar( $entry, $input_id );
 		}
 
 		//getting credit card field data
@@ -1162,7 +1163,8 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 	}
 
 	public function requires_credit_card_message() {
-		return sprintf( __( "You must add a Credit Card field to your form before creating a feed. Let's go %sadd one%s!", 'gravityforms' ), "<a href='" . add_query_arg( array( 'view' => null, 'subview' => null ) ) . "'>", '</a>' );
+		$url = add_query_arg( array( 'view' => null, 'subview' => null ) );
+		return sprintf( __( "You must add a Credit Card field to your form before creating a feed. Let's go %sadd one%s!", 'gravityforms' ), "<a href='" . esc_url( $url ) . "'>", '</a>' );
 	}
 
 	public function feed_settings_fields() {
@@ -1996,11 +1998,11 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 
 	//-------- Scripts -----------------------
 	public function scripts() {
-
+		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 		$scripts = array(
 			array(
 				'handle'  => 'gaddon_payment',
-				'src'     => $this->get_gfaddon_base_url() . '/js/gaddon_payment.js',
+				'src'     => $this->get_gfaddon_base_url() . "/js/gaddon_payment{$min}.js",
 				'version' => GFCommon::$version,
 				'strings' => array(
 					'subscriptionCancelWarning' => __( "Warning! This subscription will be canceled. This cannot be undone. 'OK' to cancel subscription, 'Cancel' to stop", 'gravityforms' ),
@@ -2099,6 +2101,28 @@ abstract class GFPaymentAddOn extends GFFeedAddOn {
 			die( '0' );
 		}
 
+	}
+
+	/**
+	 * Target of gform_before_delete_field hook. Sets relevant payment feeds to inactive when the credit card field is deleted.
+	 *
+	 * @param $form_id . ID of the form being edited.
+	 * @param $field_id . ID of the field being deleted.
+	 */
+	public function before_delete_field( $form_id, $field_id ) {
+		if ( $this->_requires_credit_card ) {
+			$form  = GFAPI::get_form( $form_id );
+			$field = $this->get_credit_card_field( $form );
+
+			if ( is_object( $field ) && $field->id == $field_id ) {
+				$feeds = $this->get_feeds( $form_id );
+				foreach ( $feeds as $feed ) {
+					if ( $feed['is_active'] ) {
+						$this->update_feed_active( $feed['id'], 0 );
+					}
+				}
+			}
+		}
 	}
 
 	//--------------- Notes ------------------

@@ -848,7 +848,7 @@ class GFAPI {
 		if ( is_array( $entry_meta ) ) {
 			foreach ( array_keys( $entry_meta ) as $key ) {
 				if ( isset( $entry[ $key ] ) ) {
-					gform_update_meta( $entry_id, $key, $entry[ $key ] );
+					gform_update_meta( $entry_id, $key, $entry[ $key ], $form['id'] );
 				}
 			}
 		}
