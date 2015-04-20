@@ -1,4 +1,96 @@
 -------------------------------------------------------------------------------------------------------------------
+Version 1.9.6
+    - Added 'gform_pre_replace_merge_tags' filter; allows replacement of default GF merge tags.
+    - Added support for index on SetDefaultValues() JS function; allows 3rd parties adding custom field types to alter the default settings based on the position of the field being added
+    - Added support for the merge tag {pricing_fields} to handle the modifiers admin and value (ex: {pricing_fields:admin} )
+    - Added the gform_field_choice_markup_pre_render filter, including form specific version, for modifying the markup of radio and checkbox choices.
+        add_filter( 'gform_field_choice_markup_pre_render', function ( $choice_markup, $choice, $field, $value ) {
+            // do stuff
+            return $choice_markup;
+        }, 10, 4 );
+    - Added form specific version of the gform_form_post_get_meta filter.
+    - Added security and enhancements to the single file upload field for some server configurations.
+    - Added GFNotifications::get_routing_field_types() for fetching supported fields types
+    - Added 'gform_routing_field_types' filter; allows modifying supported routing field types
+        Example:
+        add_filter( 'gform_routing_field_types', function( $field_types ) { 
+            array_push( $field_types, 'my-custom-field-type' );
+            return $field_types;
+        } );
+    - Added minified versions of all JavaScript and CSS files. All minified versions of JavaScript and CSS files are now loaded by default. Use the SCRIPT_DEBUG constant or the query param gform_debug (e.g. domain.com/?gform_debug) to override.
+    - Added security precautions to the file upload field. If the allowed file types setting is empty, then uploaded files will be checked against the WordPress whitelist of extensions and mime types. Use the WordPress filter upload_mimes to add or remove extensions/types. Use the gform_file_upload_whitelisting_disabled filter to disable completely. Example:
+        add_filter('gform_file_upload_whitelisting_disabled', '__return_true');
+
+    - Updated the Phone field to disable the input mask for Android phones. This is a temporary workaround for an issue with certain models of Android phones where numbers don't appear correctly inside the mask.
+    - Updated the way date and time fields are dynamically populated and how their default values are reset by conditional logic; will be followed by a more comprehensive refactoring next development cycle.
+    - Updated the gform_notification_events filter to include $form as the second parameter.
+    - Updated Finnish translation.
+    - Updated the Spanish (es_ES) translation.
+
+    - Fixed a low severity security vulnerability in the admin area which could be exploited by authenticated users with form administration permissions.
+    - Fixed an issue with resending notifications using admin label.
+    - Fixed an issue with "copy values" for address field when conditional logic was enabled on that field.
+    - Fixed PHP notices which occur when validating the Time field in some situations.
+    - Fixed issue with empty form validation on multi-page forms.
+    - Fixed a minor PHP Notice while in debug mode on the plugins page when the WordPress Simple Firewall plugin is active.
+    - Fixed an issue where default Country was not correctly reset when conditional logic hides an Address field.
+    - Fixed CSS issue with Enhanced UI Drop Downs on HDPI screens
+    - Fixed an issue with GFFormsModel::get_prepared_input_value() for Address fields returning an empty value when the copy values feature is enabled and the source field has a value.
+    - Fixed an issue where blank entries were allowed to be created, even though they aren't displayed on the entry list
+    - Fixed an issue where entry count would take into account blank entries that aren't displayed on the entry list
+    - Fixed an issue causing the multi-file upload not to allow you to select a file under certain situations.
+    - Fixed PHP warnings while in debug mode when adding a Form widget.
+    - Fixed an issue where query string with special characters in confirmation redirect setting would get saved incorrectly.
+    - Fixed an issue where post custom fields configured as Time or Date weren't getting properly upgraded to 1.9 format.
+    - Fixed an issue in the form editor on WordPress 4.2 where the fields lower down the page cannot be reordered.
+    - Fixed the shortcode preview on WordPress 4.2.
+    - Fixed a JavaScript error in the single File Upload field when clearing a file that has failed validation.
+
+    - AF: Added support for "callback" parameter to "field_select" setting type; allows custom filtering of fields to be populated in the select
+    - AF: Added support in add-on framework for add-on translation (.mo) files in the WP_LANG_DIR/gravityforms folder. e.g. /wp-content/languages/gravityforms/gravityformsmailchimp-es_ES.mo
+    - AF: Updated GFAddon::settings_dynamic_field_map() to use <th> instead of <td> for consistency
+    - AF: Updated dynamic field map setting field in add-on framework to match functionality in User Registration add-on. Adds custom key field to field map array if it does not exist. Only shows custom key field if no field map is provided
+    - AF: Fixed a PHP notice in debug mode when rendering the field_select field with the args property.
+	- AF: Fixed a PHP notice on the plugins page in WordPress 4.2 when updates are available for Rocketgenius add-ons.
+    - AF: Fixed an issue with the creation of app menu items where top level menu items may not appear if another app is installed.
+    - AF: Fixed an issue with credit card payment feeds continuing to run after the field is deleted causing a validation error. Relevant feeds are now set to inactive when the credit card field is deleted.
+    - AF: Fixed an issue with callback processing occurring before feed processing for payment framework add-ons.
+    - AF: Added support in add-on framework for limiting field map fields to specific field types
+            Example:
+                $field_map = array(
+                    array(	
+                        'name'       => 'email',
+                        'label'      => ‘Email Address’,
+                        'required'   => true,
+                        'field_type' => array( 'email' )
+                    ),
+                    array(	
+                        'name'       => ‘name’,
+                        'label'      => ‘Your Name',
+                        'field_type' => array( ‘name’ )
+                    ),
+                );
+    - AF: Fixed an issue with GFPaymentAddOn::get_submission_data() using rgpost() when preparing the billing info values instead of the $entry resulting in empty address values when the copy values feature is enabled and the source field has a value.
+    - AF: Fixed a PHP warning while in debug mode in the results page when the results are filtered and the result set is empty.
+    - AF: Fixed an issue whith styles not getting enqueued for in the app settings page.
+    - AF: Fixed an issue in the form submission process where feeds don't get processed for forms loaded via ajax or in the dashboard.
+
+    - API: Added support for arrays as entry search term values for entry meta combined with operators IN and NOT IN. Credit to Scott Kingsley Clark from Pods Framework.
+            Example:
+                $search_criteria = array(
+                    'status'        => 'active',
+                    'field_filters' => array(
+                        array(
+                            'key' => 'my_entry_value',
+                            'operator' => 'IN', // or 'NOT IN'
+                            'value' => array( 'Second Choice', 'Third Choice' ),
+                        ),
+                    )
+                );
+    - API: Updated entry meta functions to improve performance for bulk operations. Credits to Zack Katz from Katz Web Services.
+
+
+-------------------------------------------------------------------------------------------------------------------
 Version 1.9.5
     - Added JS filter: 'gform_form_editor_can_field_be_added' allowing developers to prevent custom field types being added to the form if the conditions they define, such as a Product field being present, are not met.
           gform.addFilter('gform_form_editor_can_field_be_added', function (canFieldBeAdded, type) {

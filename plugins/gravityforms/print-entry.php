@@ -73,6 +73,8 @@ if ( empty( $form_id ) || empty( $lead_ids ) ) {
 
 $form = RGFormsModel::get_form_meta( $form_id );
 
+$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -87,10 +89,10 @@ $form = RGFormsModel::get_form_meta( $form_id );
 	<meta http-equiv="Imagetoolbar" content="No" />
 	<title>
 		Print Preview :
-		<?php echo $form['title'] ?> :
+		<?php echo esc_html( $form['title'] ) ?> :
 		<?php echo count( $lead_ids ) > 1 ? __( 'Entry # ', 'gravityforms' ) . $lead_ids[0] : 'Bulk Print' ?>
 	</title>
-	<link rel='stylesheet' href='<?php echo GFCommon::get_base_url() ?>/css/print.css' type='text/css' />
+	<link rel='stylesheet' href='<?php echo GFCommon::get_base_url() ?>/css/print<?php echo $min; ?>.css' type='text/css' />
 <?php
 $styles = apply_filters( 'gform_print_styles', false, $form );
 if ( ! empty( $styles ) ) {

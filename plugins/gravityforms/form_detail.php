@@ -41,9 +41,11 @@ class GFFormDetail {
 		/* @var GF_Field_Address $gf_address_field  */
 		$gf_address_field = GF_Fields::get( 'address' );
 
+		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+
 		?>
 
-		<link rel="stylesheet" href="<?php echo GFCommon::get_base_url() ?>/css/admin.css?ver=<?php echo GFCommon::$version ?>" type="text/css" />
+		<link rel="stylesheet" href="<?php echo GFCommon::get_base_url() ?>/css/admin<?php echo $min; ?>.css?ver=<?php echo GFCommon::$version ?>" type="text/css" />
 
 		<script type="text/javascript">
 			<?php GFCommon::gf_global(); ?>

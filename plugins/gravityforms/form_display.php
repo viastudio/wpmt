@@ -71,13 +71,13 @@ class GFFormDisplay {
 
 		//Upload files to temp folder when saving for later, going to the next page or when submitting the form and it failed validation
 		if ( $saving_for_later || $target_page >= $page_number || ( $target_page == 0 && ! $is_valid ) ) {
+			if ( ! empty( $_FILES ) ) {
+				GFCommon::log_debug( 'GFFormDisplay::process_form(): Uploading files...' );
+				//Uploading files to temporary folder
+				$files = self::upload_files( $form, $files );
 
-			GFCommon::log_debug( 'GFFormDisplay::process_form(): Uploading files...' );
-
-			//Uploading files to temporary folder
-			$files = self::upload_files( $form, $files );
-
-			RGFormsModel::$uploaded_files[ $form_id ] = $files;
+				RGFormsModel::$uploaded_files[ $form_id ] = $files;
+			}
 		}
 
 		// Load target page if it did not fail validation or if going to the previous page
@@ -195,9 +195,12 @@ class GFFormDisplay {
 
 	private static function upload_files( $form, $files ) {
 
+		$form_upload_path = GFFormsModel::get_upload_path( $form['id'] );
+
 		//Creating temp folder if it does not exist
-		$target_path = RGFormsModel::get_upload_path( $form['id'] ) . '/tmp/';
+		$target_path = $form_upload_path . '/tmp/';
 		wp_mkdir_p( $target_path );
+		GFCommon::recursive_add_index_file( $form_upload_path );
 
 		foreach ( $form['fields'] as $field ) {
 			$input_name = "input_{$field->id}";
@@ -1257,6 +1260,7 @@ class GFFormDisplay {
 			return false;
 		}
 
+		$is_valid = true;
 		foreach ( $form['fields'] as &$field ) {
 			/* @var GF_Field $field */
 
@@ -1317,13 +1321,18 @@ class GFFormDisplay {
 
 			$field->failed_validation  = rgar( $custom_validation_result, 'is_valid' ) ? false : true;
 			$field->validation_message = rgar( $custom_validation_result, 'message' );
+
+			if ( $field->failed_validation ) {
+				$is_valid = false;
+			}
 		}
 
-		$is_valid = true;
-		foreach ( $form['fields'] as $f ) {
-			if ( $f->failed_validation ) {
+		$is_last_page = rgpost( "gform_target_page_number_{$form['id']}" ) == '0';
+		if ( $is_last_page && self::is_form_empty( $form ) ){
+			foreach ( $form['fields'] as &$field ) {
+				$field->failed_validation = true;
+				$field->validation_message = esc_html__( 'At least one field must be filled out', 'gravityforms' );
 				$is_valid = false;
-				break;
 			}
 		}
 
@@ -1333,6 +1342,16 @@ class GFFormDisplay {
 		$failed_validation_page = $validation_result['failed_validation_page'];
 
 		return $is_valid;
+	}
+
+	public static function is_form_empty( $form ){
+
+		foreach ( $form['fields'] as $field ) {
+			if ( ! self::is_empty( $field, $form['id'] ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static function failed_state_validation( $form_id, $field, $value ) {
@@ -1428,20 +1447,22 @@ class GFFormDisplay {
 		// adding pre enqueue scripts hook so that scripts can be added first if a need exists
 		do_action( "gform_pre_enqueue_scripts_{$form['id']}", do_action( 'gform_pre_enqueue_scripts', $form, $ajax ), $ajax );
 
+		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+
 		if ( ! get_option( 'rg_gforms_disable_css' ) ) {
 
-			wp_enqueue_style( 'gforms_reset_css', GFCommon::get_base_url() . '/css/formreset.css', null, GFCommon::$version );
+			wp_enqueue_style( 'gforms_reset_css', GFCommon::get_base_url() . "/css/formreset{$min}.css", null, GFCommon::$version );
 
 			if ( self::has_datepicker_field( $form ) ) {
-				wp_enqueue_style( 'gforms_datepicker_css', GFCommon::get_base_url() . '/css/datepicker.css', null, GFCommon::$version );
+				wp_enqueue_style( 'gforms_datepicker_css', GFCommon::get_base_url() . "/css/datepicker{$min}.css", null, GFCommon::$version );
 			}
 
-			wp_enqueue_style( 'gforms_formsmain_css', GFCommon::get_base_url() . '/css/formsmain.css', null, GFCommon::$version );
-			wp_enqueue_style( 'gforms_ready_class_css', GFCommon::get_base_url() . '/css/readyclass.css', null, GFCommon::$version );
-			wp_enqueue_style( 'gforms_browsers_css', GFCommon::get_base_url() . '/css/browsers.css', null, GFCommon::$version );
+			wp_enqueue_style( 'gforms_formsmain_css', GFCommon::get_base_url() . "/css/formsmain{$min}.css", null, GFCommon::$version );
+			wp_enqueue_style( 'gforms_ready_class_css', GFCommon::get_base_url() . "/css/readyclass{$min}.css", null, GFCommon::$version );
+			wp_enqueue_style( 'gforms_browsers_css', GFCommon::get_base_url() . "/css/browsers{$min}.css", null, GFCommon::$version );
 
 			if ( is_rtl() ) {
-				wp_enqueue_style( 'gforms_rtl_css', GFCommon::get_base_url() . '/css/rtl.css', null, GFCommon::$version );
+				wp_enqueue_style( 'gforms_rtl_css', GFCommon::get_base_url() . "/css/rtl{$min}.css", null, GFCommon::$version );
 			}
 		}
 
@@ -1508,25 +1529,27 @@ class GFFormDisplay {
 
 			if ( ! wp_style_is( 'gforms_css' ) ) {
 
-				wp_enqueue_style( 'gforms_reset_css', GFCommon::get_base_url() . '/css/formreset.css', null, GFCommon::$version );
+				$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+
+				wp_enqueue_style( 'gforms_reset_css', GFCommon::get_base_url() . "/css/formreset{$min}.css", null, GFCommon::$version );
 				wp_print_styles( array( 'gforms_reset_css' ) );
 
-				wp_enqueue_style( 'gforms_formsmain_css', GFCommon::get_base_url() . '/css/formsmain.css', null, GFCommon::$version );
+				wp_enqueue_style( 'gforms_formsmain_css', GFCommon::get_base_url() . "/css/formsmain{$min}.css", null, GFCommon::$version );
 				wp_print_styles( array( 'gforms_formsmain_css' ) );
 
-				wp_enqueue_style( 'gforms_ready_class_css', GFCommon::get_base_url() . '/css/readyclass.css', null, GFCommon::$version );
+				wp_enqueue_style( 'gforms_ready_class_css', GFCommon::get_base_url() . "/css/readyclass{$min}.css", null, GFCommon::$version );
 				wp_print_styles( array( 'gforms_ready_class_css' ) );
 
-				wp_enqueue_style( 'gforms_browsers_css', GFCommon::get_base_url() . '/css/browsers.css', null, GFCommon::$version );
+				wp_enqueue_style( 'gforms_browsers_css', GFCommon::get_base_url() . "/css/browsers{$min}.css", null, GFCommon::$version );
 				wp_print_styles( array( 'gforms_browsers_css' ) );
 
 				if ( self::has_datepicker_field( $form ) ) {
-					wp_enqueue_style( 'gforms_datepicker_css', GFCommon::get_base_url() . '/css/datepicker.css', null, GFCommon::$version );
+					wp_enqueue_style( 'gforms_datepicker_css', GFCommon::get_base_url() . "/css/datepicker{$min}.css", null, GFCommon::$version );
 					wp_print_styles( array( 'gforms_datepicker_css' ) );
 				}
 
 				if ( is_rtl() ) {
-					wp_enqueue_style( 'gforms_rtl_css', GFCommon::get_base_url() . '/css/rtl.css', null, GFCommon::$version );
+					wp_enqueue_style( 'gforms_rtl_css', GFCommon::get_base_url() . "/css/rtl{$min}.css", null, GFCommon::$version );
 					wp_print_styles( array( 'gforms_rtl_css' ) );
 				}
 			}
@@ -1611,6 +1634,16 @@ class GFFormDisplay {
 		return false;
 	}
 
+	/**
+	 * Get init script and all necessary data for conditional logic.
+	 *
+	 * @todo: Replace much of the field value retrieval with a get_original_value() method in GF_Field class.
+	 *
+	 * @param       $form
+	 * @param array $field_values
+	 *
+	 * @return string
+	 */
 	private static function get_conditional_logic( $form, $field_values = array() ) {
 		$logics            = '';
 		$dependents        = '';
@@ -1650,12 +1683,13 @@ class GFFormDisplay {
 			//-- Saving default values so that they can be restored when toggling conditional logic ---
 			$field_val  = '';
 			$input_type = RGFormsModel::get_input_type( $field );
+			$inputs = $field->get_entry_inputs();
 
 			//get parameter value if pre-populate is enabled
 			if ( $field->allowsPrepopulate ) {
-				if ( is_array( $field->inputs ) ) {
+				if ( is_array( $inputs ) ) {
 					$field_val = array();
-					foreach ( $field->inputs as $input ) {
+					foreach ( $inputs as $input ) {
 						$field_val[ "input_{$input['id']}" ] = RGFormsModel::get_parameter_value( rgar( $input, 'name' ), $field_values, $field );
 					}
 				} else if ( $input_type == 'time' ) { // maintained for backwards compatibility. The Time field now has an inputs array.
@@ -1664,7 +1698,7 @@ class GFFormDisplay {
 						$field_val   = array();
 						$field_val[] = esc_attr( $matches[1] ); //hour
 						$field_val[] = esc_attr( $matches[2] ); //minute
-						$field_val[] = rgar( $matches, 3 ); //am or pm
+						$field_val[] = rgar( $matches, 3 );     //am or pm
 					}
 				} else if ( $input_type == 'list' ) {
 					$parameter_val = RGFormsModel::get_parameter_value( $field->inputName, $field_values, $field );
@@ -1704,24 +1738,45 @@ class GFFormDisplay {
 				}
 			} else if ( ! empty( $field_val ) ) {
 
-				if ( GFFormsModel::get_input_type( $field ) == 'date' ) {
-					//format date
-					$format    = empty( $field->dateFormat ) ? 'mdy' : esc_attr( $field->dateFormat );
-					$date_info = GFcommon::parse_date( $field_val, $format );
-					switch ( $format ) {
-						case 'mdy':
-							$field_val = $date_info['month'] . '/' . $date_info['day'] . '/' . $date_info['year'];
-							break;
-						case 'dmy':
-							$field_val = $date_info['day'] . '/' . $date_info['month'] . '/' . $date_info['year'];
-							break;
-						case 'ymd':
-							$field_val = $date_info['year'] . '/' . $date_info['month'] . '/' . $date_info['day'];
-							break;
-					}
+				$input_type = GFFormsModel::get_input_type( $field );
+
+				switch( $input_type ) {
+					case 'date':
+						// for date fields; that are multi-input; and where the field value is a string
+						// (happens with prepop, default value will always be an array for multi-input date fields)
+						if( is_array( $field->inputs ) && ( ! is_array( $field_val ) || ! isset( $field_val['m'] ) ) ) {
+
+							$format    = empty( $field->dateFormat ) ? 'mdy' : esc_attr( $field->dateFormat );
+							$date_info = GFcommon::parse_date( $field_val, $format );
+
+							// converts date to array( 'm' => 1, 'd' => '13', 'y' => '1987' )
+							$field_val = $field->get_date_array_by_format( array( $date_info['month'], $date_info['day'], $date_info['year'] ) );
+
+						}
+						break;
+					case 'time':
+						$ampm_key = key( array_slice( $field_val, -1, 1, true ) );
+						$field_val[ $ampm_key ] = strtolower( $field_val[ $ampm_key ] );
+						break;
+					case 'address':
+
+						$state_input_id = sprintf( '%s.4', $field->id );
+						if( isset( $field_val[ $state_input_id ] ) && ! $field_val[ $state_input_id ] ) {
+							$field_val[ $state_input_id ] = $field->defaultState;
+						}
+
+						$country_input_id = sprintf( '%s.6', $field->id );
+						if( isset( $field_val[ $country_input_id ] ) && ! $field_val[ $country_input_id ] ) {
+							$field_val[ $country_input_id ] = $field->defaultCountry;
+						}
+
+						break;
 				}
+
 				$default_values[ $field->id ] = $field_val;
+
 			}
+
 		}
 
 		$button_conditional_script = '';
