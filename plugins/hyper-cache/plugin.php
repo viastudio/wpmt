@@ -4,7 +4,7 @@
   Plugin Name: Hyper Cache
   Plugin URI: http://www.satollo.net/plugins/hyper-cache
   Description: A easy to configure and efficient cache to increase the speed of your blog.
-  Version: 3.2.1
+  Version: 3.2.2
   Author: Stefano Lissa
   Author URI: http://www.satollo.net
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
@@ -608,8 +608,7 @@ function hyper_cache_callback($buffer) {
 
     if ($cache_stop || $hyper_cache_stop) {
 
-        if (isset($options['gzip']) && $hyper_cache_gzip_accepted && function_exists('gzencode')) {
-            //error_log('dsfsdfsdfsdfsdffafasfsafdsa');
+        if (isset($options['gzip_on_the_fly']) && $hyper_cache_gzip_accepted && function_exists('gzencode')) {
             header('Cache-Control: private, max-age=0, no-cache, no-transform', false);
             header('Vary: Accept-Encoding,User-Agent');
             header('Content-Encoding: gzip');
@@ -626,7 +625,7 @@ function hyper_cache_callback($buffer) {
     if ($hyper_cache_is_mobile) {
         // Bypass (should no need since there is that control on advanced-cache.php)
         if ($options['mobile'] == 2) {
-            if (isset($options['gzip']) && $hyper_cache_gzip_accepted && function_exists('gzencode')) {
+            if (isset($options['gzip_on_the_fly']) && $hyper_cache_gzip_accepted && function_exists('gzencode')) {
                 header('Cache-Control: private, max-age=0, no-cache, no-transform', false);
                 header('Vary: Accept-Encoding,User-Agent');
                 header('Content-Encoding: gzip');
@@ -674,13 +673,15 @@ function hyper_cache_callback($buffer) {
         }
     }
 
-    file_put_contents($lc_file, $buffer . '<!-- hyper cache ' . date('Y-m-d h:i:s') . ' -->');
+    @file_put_contents($lc_file, $buffer . '<!-- hyper cache ' . date('Y-m-d h:i:s') . ' -->');
 
     // Saves the gzipped version
     if (isset($options['gzip'])) {
         $gzf = gzopen($lc_file . '.gz', 'wb9');
-        gzwrite($gzf, $buffer . '<!-- hyper cache gzip ' . date('Y-m-d h:i:s') . ' -->');
-        gzclose($gzf);
+        if ($gzf !== false) {
+            gzwrite($gzf, $buffer . '<!-- hyper cache gzip ' . date('Y-m-d h:i:s') . ' -->');
+            gzclose($gzf);
+        }
     }
     return $buffer;
 }

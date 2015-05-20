@@ -1,7 +1,7 @@
 === Hyper Cache ===
 Tags: cache,performance,staticizer,apache,htaccess,tuning,speed,bandwidth,optimization,tidy,gzip,compression,server load,boost
 Requires at least: 2.5
-Tested up to: 4.1
+Tested up to: 4.2.1
 Stable tag: trunk
 Donate link: http://www.satollo.net/donations
 Contributors: satollo
@@ -14,14 +14,15 @@ Hyper Cache is a cache plugin specifically written to get the maximum
 speed for your WordPress blog. It can be used in low resources hosting as well
 on high end servers.
 
-Hyper Cache is purely PHP and works on every blog: no complex configurations are need
-and when you deactivate it no stale setting are left floating around.
+Hyper Cache is **purely PHP** and works on **every blog**: no complex configurations are needed
+and when you deactivate it no stale settings are left around.
 
 Short list of features:
 
 * Mobile aware: double cache for desktop and mobile site versions
+* HTTPS ready
 * Mobile theme switch option: change the theme on mobile device detection
-* Able to serve expired pages to bots to increase the perceived speed by bots
+* Able to serve expired pages to bots to increase the perceived blog speed by bots
 * Manages compression even on the fly for non cached pages
 * Lots of configurable bypasses: matching cookies, matching urls, user agents, ...
 * Comments aware: is able to serve cached pages even to visitors who commented the blog (perfect for
@@ -29,18 +30,21 @@ blog with great readers paritipation)
 * Cache folder can be moved outside your blog space to exclude it from backups
 * Controls over cache cleaning on blog events (post edited, comments, ...)
 * Autoclean to controls the cache used disk space
-* CDN support (experimental)
+* CDN support
 * Other special options
 * Response header signature to check the working status
 
 More can be read on the [Hyper Cache official page](http://www.satollo.net/plugins/hyper-cache).
+
+You can further optimize the blog installing [Autoptimize](https://wordpress.org/plugins/autoptimize/)
+which cleans up the HTML, minifies and concatenates CSS and JavaScript.
 
 Other plugins by Stefano Lissa:
 
 * [Newsletter](http://www.thenewsletterplugin.com)
 * [Header and Footer](http://www.satollo.net/plugins/header-footer)
 * [Include Me](http://www.satollo.net/plugins/include-me)
-
+* [Comment Plus](http://www.satollo.net/plugins/comment-plus)
 
 == Installation ==
 
@@ -63,19 +67,23 @@ the [Hyper Cache official forum](http://www.satollo.net/forums/forum/hyper-cache
 
 == Changelog ==
 
+= 3.2.2 =
+
+* Added check for gz file write error
+* Added the gzip on the fly option
+
 = 3.2.1 =
 
 * Fixed link rel canonica rewrite with the cdn active
 
 = 3.2.0 =
 
-* Links
 * Fixed the options delete function
 
 = 3.1.9 =
 
 * Fixed translations
-* Reviews CDN options (now available to all)
+* Reviewed CDN options (now available to all)
 
 = 3.1.8 =
 

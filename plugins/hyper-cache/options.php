@@ -358,6 +358,16 @@ if (!wp_next_scheduled('hyper_cache_clean')) {
                         </td>
                     </tr>
                     <tr>
+                        <th><?php _e('Enable on-the-fly compression', 'hyper-cache'); ?></th>
+                        <td>
+                            <?php $controls->checkbox('gzip_on_the_fly'); ?>
+
+                            <p class="description">
+                                <?php _e('Enable on the fly compression for non cached pages.', 'hyper-cache'); ?>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
 
                         <th><?php _e('When the home is refreshed, refresh even the', 'hyper-cache'); ?></th>
                         <td>
