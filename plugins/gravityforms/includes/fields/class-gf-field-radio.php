@@ -10,7 +10,7 @@ class GF_Field_Radio extends GF_Field {
 	public $type = 'radio';
 
 	public function get_form_editor_field_title() {
-		return __( 'Radio Buttons', 'gravityforms' );
+		return esc_attr__( 'Radio Buttons', 'gravityforms' );
 	}
 
 	function get_form_editor_field_settings() {
@@ -42,7 +42,7 @@ class GF_Field_Radio extends GF_Field {
 
 		if ( $this->isRequired && $this->enableOtherChoice && $value == GFCommon::get_other_choice_value() ) {
 			$this->failed_validation  = true;
-			$this->validation_message = empty( $this->errorMessage ) ? __( 'This field is required.', 'gravityforms' ) : $this->errorMessage;
+			$this->validation_message = empty( $this->errorMessage ) ? esc_html__( 'This field is required.', 'gravityforms' ) : $this->errorMessage;
 		}
 	}
 
@@ -128,7 +128,8 @@ class GF_Field_Radio extends GF_Field {
 					} else {
 						$other_value = $other_default_value;
 					}
-					$label = "<input id='input_{$this->formId}_{$this->id}_other' name='input_{$this->id}_other' type='text' value='" . esc_attr( $other_value ) . "' onfocus='$onfocus' onblur='$onblur' $tabindex $onkeyup $disabled_text />";
+
+					$label = "<input id='input_{$this->formId}_{$this->id}_other' name='input_{$this->id}_other' type='text' value='" . esc_attr( $other_value ) . "' aria-label='" . esc_attr__( 'Other', 'gravityforms' ) . "' onfocus='$onfocus' onblur='$onblur' $tabindex $onkeyup $disabled_text />";
 				}
 
 				$choice_markup = sprintf( "<li class='gchoice_$id'><input name='input_%d' type='radio' value='%s' %s id='choice_%s' $tabindex %s $logic_event %s />%s</li>", $this->id, esc_attr( $field_value ), $checked, $id, $disabled_text, $input_focus, $label );
@@ -144,7 +145,7 @@ class GF_Field_Radio extends GF_Field {
 
 			$total = sizeof( $this->choices );
 			if ( $count < $total ) {
-				$choices .= "<li class='gchoice_total'>" . sprintf( __( '%d of %d items shown. Edit field to view all', 'gravityforms' ), $count, $total ) . '</li>';
+				$choices .= "<li class='gchoice_total'>" . sprintf( esc_html__( '%d of %d items shown. Edit field to view all', 'gravityforms' ), $count, $total ) . '</li>';
 			}
 		}
 
