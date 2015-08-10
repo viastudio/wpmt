@@ -87,9 +87,9 @@ class GF_Field_Email extends GF_Field {
 		$confirm_field_input     = GFFormsModel::get_input( $this, $this->id . '.2' );
 
 		$enter_email_label   = rgar( $enter_email_field_input, 'customLabel' ) != '' ? $enter_email_field_input['customLabel'] : esc_html__( 'Enter Email', 'gravityforms' );
-		$enter_email_label   = apply_filters( "gform_email_{$form_id}", apply_filters( 'gform_email', $enter_email_label, $form_id ), $form_id );
+		$enter_email_label   = gf_apply_filters( 'gform_email', $form_id, $enter_email_label, $form_id );
 		$confirm_email_label = rgar( $confirm_field_input, 'customLabel' ) != '' ? $confirm_field_input['customLabel'] : esc_html__( 'Confirm Email', 'gravityforms' );
-		$confirm_email_label = apply_filters( "gform_email_confirm_{$form_id}", apply_filters( 'gform_email_confirm', $confirm_email_label, $form_id ), $form_id );
+		$confirm_email_label = gf_apply_filters( 'gform_email_confirm', $form_id, $confirm_email_label, $form_id );
 
 		$single_placeholder_attribute        = $this->get_field_placeholder_attribute();
 		$enter_email_placeholder_attribute   = $this->get_input_placeholder_attribute( $enter_email_field_input );

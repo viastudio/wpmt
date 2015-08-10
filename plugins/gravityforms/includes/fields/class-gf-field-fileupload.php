@@ -186,7 +186,7 @@ class GF_Field_FileUpload extends GF_Field {
 				}
 			}
 
-			$plupload_init = apply_filters( "gform_plupload_settings_{$form_id}", apply_filters( 'gform_plupload_settings', $plupload_init, $form_id, $this ), $form_id, $this );
+			$plupload_init = gf_apply_filters( 'gform_plupload_settings', $form_id, $plupload_init, $form_id, $this );
 
 			$drop_files_here_text = esc_html__( 'Drop files here or', 'gravityforms' );
 			$select_files_text    = esc_attr__( 'Select files', 'gravityforms' );
@@ -494,6 +494,19 @@ class GF_Field_FileUpload extends GF_Field {
 
 		$this->allowedExtensions = sanitize_text_field( $this->allowedExtensions );
 
+	}
+
+	public function get_value_export( $entry, $input_id = '', $use_text = false, $is_csv = false ) {
+		if ( empty( $input_id ) ) {
+			$input_id = $this->id;
+		}
+
+		$value = rgar( $entry, $input_id );
+		if ( $this->multipleFiles && ! empty( $value ) ) {
+			return implode( ' , ', json_decode( $value, true ) );
+		}
+
+		return $value;
 	}
 
 }

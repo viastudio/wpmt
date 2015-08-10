@@ -50,6 +50,12 @@ class GFSettings {
 				break;
 			default:
 				self::page_header();
+
+				/**
+				 * Fires in the settings page depending on which page of the settings page you are in (the Subview)
+				 *
+				 * @param mixed $subview The sub-section of the main Form's settings
+				 */
 				do_action( 'gform_settings_' . str_replace( ' ', '_', $subview ) );
 				self::page_footer();
 		}
@@ -90,7 +96,7 @@ class GFSettings {
 			update_option( 'recently_activated', array( $plugin => time() ) + (array) get_option( 'recently_activated' ) );
 
 			?>
-			<div class="updated fade" style="padding:20px;"><?php echo sprintf( esc_html__( 'Gravity Forms have been successfully uninstalled. It can be re-activated from the %splugins page%s.', 'gravityforms' ), "<a href='plugins.php'>", '</a>' ) ?></div>
+			<div class="updated fade" style="padding:20px;"><?php echo sprintf( esc_html__( 'Gravity Forms has been successfully uninstalled. It can be re-activated from the %splugins page%s.', 'gravityforms' ), "<a href='plugins.php'>", '</a>' ) ?></div>
 			<?php
 			return;
 		}
@@ -111,6 +117,12 @@ class GFSettings {
 
 				<?php
 				$uninstall_button = '<input type="submit" name="uninstall" value="' . esc_attr__( 'Uninstall Gravity Forms', 'gravityforms' ) . '" class="button" onclick="return confirm(\'' . esc_js( __( "Warning! ALL Gravity Forms data, including form entries will be deleted. This cannot be undone. 'OK' to delete, 'Cancel' to stop", 'gravityforms' ) ) . '\');"/>';
+
+				/**
+				 * Allows for the modification of the Gravity Forms uninstall button
+				 *
+				 * @param string $uninstall_button The HTML of the uninstall button
+				 */
 				echo apply_filters( 'gform_uninstall_button', $uninstall_button );
 				?>
 
@@ -326,6 +338,12 @@ class GFSettings {
 				<p class="submit" style="text-align: left;">
 					<?php
 					$save_button = '<input type="submit" name="submit" value="' . esc_html__( 'Save Settings', 'gravityforms' ) . '" class="button-primary gfbutton"/>';
+
+					/**
+					 * Filters through and allows modification of the Settings save button HTML in a Form
+					 *
+					 * @param string $save_button
+					 */
 					echo apply_filters( 'gform_settings_save_button', $save_button );
 					?>
 				</p>

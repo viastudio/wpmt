@@ -108,11 +108,11 @@ class GF_Field_Name extends GF_Field {
 				$last_tabindex   = GFCommon::get_tabindex();
 				$suffix_tabindex = GFCommon::get_tabindex();
 
-				$prefix_sub_label      = rgar( $prefix_input, 'customLabel' ) != '' ? $prefix_input['customLabel'] : apply_filters( "gform_name_prefix_{$form_id}", apply_filters( 'gform_name_prefix', esc_html__( 'Prefix', 'gravityforms' ), $form_id ), $form_id );
-				$first_name_sub_label  = rgar( $first_input, 'customLabel' ) != '' ? $first_input['customLabel'] : apply_filters( "gform_name_first_{$form_id}", apply_filters( 'gform_name_first', esc_html__( 'First', 'gravityforms' ), $form_id ), $form_id );
-				$middle_name_sub_label = rgar( $middle_input, 'customLabel' ) != '' ? $middle_input['customLabel'] : apply_filters( "gform_name_middle_{$form_id}", apply_filters( 'gform_name_middle', esc_html__( 'Middle', 'gravityforms' ), $form_id ), $form_id );
-				$last_name_sub_label   = rgar( $last_input, 'customLabel' ) != '' ? $last_input['customLabel'] : apply_filters( "gform_name_last_{$form_id}", apply_filters( 'gform_name_last', esc_html__( 'Last', 'gravityforms' ), $form_id ), $form_id );
-				$suffix_sub_label      = rgar( $suffix_input, 'customLabel' ) != '' ? $suffix_input['customLabel'] : apply_filters( "gform_name_suffix_{$form_id}", apply_filters( 'gform_name_suffix', esc_html__( 'Suffix', 'gravityforms' ), $form_id ), $form_id );
+				$prefix_sub_label      = rgar( $prefix_input, 'customLabel' ) != '' ? $prefix_input['customLabel'] : gf_apply_filters( 'gform_name_prefix', $form_id, esc_html__( 'Prefix', 'gravityforms' ), $form_id );
+				$first_name_sub_label  = rgar( $first_input, 'customLabel' ) != '' ? $first_input['customLabel'] : gf_apply_filters( 'gform_name_first', $form_id, esc_html__( 'First', 'gravityforms' ), $form_id );
+				$middle_name_sub_label = rgar( $middle_input, 'customLabel' ) != '' ? $middle_input['customLabel'] : gf_apply_filters( 'gform_name_middle', $form_id, esc_html__( 'Middle', 'gravityforms' ), $form_id );
+				$last_name_sub_label   = rgar( $last_input, 'customLabel' ) != '' ? $last_input['customLabel'] : gf_apply_filters( 'gform_name_last', $form_id, esc_html__( 'Last', 'gravityforms' ), $form_id );
+				$suffix_sub_label      = rgar( $suffix_input, 'customLabel' ) != '' ? $suffix_input['customLabel'] : gf_apply_filters( 'gform_name_suffix', $form_id, esc_html__( 'Suffix', 'gravityforms' ), $form_id );
 
 				$prefix_markup         = '';
 				$first_markup          = '';
@@ -230,8 +230,8 @@ class GF_Field_Name extends GF_Field {
 			default :
 				$first_tabindex       = GFCommon::get_tabindex();
 				$last_tabindex        = GFCommon::get_tabindex();
-				$first_name_sub_label = rgar( $first_input, 'customLabel' ) != '' ? $first_input['customLabel'] : apply_filters( "gform_name_first_{$form_id}", apply_filters( 'gform_name_first', esc_html__( 'First', 'gravityforms' ), $form_id ), $form_id );
-				$last_name_sub_label  = rgar( $last_input, 'customLabel' ) != '' ? $last_input['customLabel'] : apply_filters( "gform_name_last_{$form_id}", apply_filters( 'gform_name_last', esc_html__( 'Last', 'gravityforms' ), $form_id ), $form_id );
+				$first_name_sub_label = rgar( $first_input, 'customLabel' ) != '' ? $first_input['customLabel'] : gf_apply_filters( 'gform_name_first', $form_id, esc_html__( 'First', 'gravityforms' ), $form_id );
+				$last_name_sub_label  = rgar( $last_input, 'customLabel' ) != '' ? $last_input['customLabel'] : gf_apply_filters( 'gform_name_last', $form_id, esc_html__( 'Last', 'gravityforms' ), $form_id );
 				if ( $is_sub_label_above ) {
 					$first_markup = '';
 					$style        = ( $is_admin && rgar( $first_input, 'isHidden' ) ) ? "style='display:none;'" : '';
@@ -391,6 +391,39 @@ class GF_Field_Name extends GF_Field {
 			}
 		}
 	}
+
+	public function get_value_export( $entry, $input_id = '', $use_text = false, $is_csv = false ) {
+		if ( empty( $input_id ) ) {
+			$input_id = $this->id;
+		}
+
+		if ( absint( $input_id ) == $input_id ) {
+			//If field is simple (one input), simply return full content
+			$name = rgar( $entry, $input_id );
+			if ( ! empty( $name ) ) {
+				return $name;
+			}
+
+			//Complex field (multiple inputs). Join all pieces and create name
+			$prefix = trim( rgar( $entry, $input_id . '.2' ) );
+			$first  = trim( rgar( $entry, $input_id . '.3' ) );
+			$middle = trim( rgar( $entry, $input_id . '.4' ) );
+			$last   = trim( rgar( $entry, $input_id . '.6' ) );
+			$suffix = trim( rgar( $entry, $input_id . '.8' ) );
+
+			$name = $prefix;
+			$name .= ! empty( $name ) && ! empty( $first ) ? ' ' . $first : $first;
+			$name .= ! empty( $name ) && ! empty( $middle ) ? ' ' . $middle : $middle;
+			$name .= ! empty( $name ) && ! empty( $last ) ? ' ' . $last : $last;
+			$name .= ! empty( $name ) && ! empty( $suffix ) ? ' ' . $suffix : $suffix;
+
+			return $name;
+		} else {
+
+			return rgar( $entry, $input_id );
+		}
+	}
+
 }
 
 GF_Fields::register( new GF_Field_Name() );
