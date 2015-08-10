@@ -27,7 +27,20 @@ var adminsubtabs = {
       numitems: 2
     }
   },
-  2: {},
+  2: {
+    "generalevents": {
+      tabtext: gtm4wp.generaleventstabtitle,
+      numitems: 2
+    },
+    "mediaevents": {
+      tabtext: gtm4wp.mediaeventstabtitle,
+      numitems: 3
+    },
+    "depecratedevents": {
+      tabtext: gtm4wp.depecratedeventstabtitle,
+      numitems: 8
+    }
+  },
   3: {},
   4: {
     "blocktags": {

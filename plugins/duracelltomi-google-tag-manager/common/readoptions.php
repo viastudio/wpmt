@@ -28,6 +28,9 @@ define( 'GTM4WP_OPTION_EVENTS_DWLEXT',         'event-download-extensions' );
 define( 'GTM4WP_OPTION_EVENTS_EMAILCLICKS',    'event-email-clicks' );
 define( 'GTM4WP_OPTION_EVENTS_FORMMOVE',       'event-form-move' );
 define( 'GTM4WP_OPTION_EVENTS_SOCIAL',         'event-social' );
+define( 'GTM4WP_OPTION_EVENTS_YOUTUBE',        'event-youtube' );
+define( 'GTM4WP_OPTION_EVENTS_VIMEO',          'event-vimeo' );
+define( 'GTM4WP_OPTION_EVENTS_SOUNDCLOUD',     'event-soundcloud' );
 
 define( 'GTM4WP_OPTION_SCROLLER_ENABLED',      'scroller-enabled' );
 define( 'GTM4WP_OPTION_SCROLLER_DEBUGMODE',    'scroller-debug-mode' );
@@ -75,11 +78,13 @@ define( 'GTM4WP_OPTION_INTEGRATE_WOOCOMMERCE',       'integrate-woocommerce' );
 define( 'GTM4WP_OPTION_INTEGRATE_WCTRACKCLASSICEC',  'integrate-woocommerce-track-classic-ecommerce' );
 define( 'GTM4WP_OPTION_INTEGRATE_WCTRACKENHANCEDEC', 'integrate-woocommerce-track-enhanced-ecommerce' );
 define( 'GTM4WP_OPTION_INTEGRATE_WCREMARKETING',     'integrate-woocommerce-remarketing' );
+define( 'GTM4WP_OPTION_INTEGRATE_WCREMARKETINGSKU',  'integrate-woocommerce-remarketing-usesku' );
 
 define( 'GTM4WP_OPTION_INTEGRATE_WPECOMMERCE',   'integrate-wp-e-commerce' );
 
-define( 'GTM4WP_PLACEMENT_FOOTER',             0 );
-define( 'GTM4WP_PLACEMENT_BODYOPEN',           1 );
+define( 'GTM4WP_PLACEMENT_FOOTER',        0 );
+define( 'GTM4WP_PLACEMENT_BODYOPEN',      1 );
+define( 'GTM4WP_PLACEMENT_BODYOPEN_AUTO', 2 );
 
 $gtm4wp_options = array();
 
@@ -112,6 +117,9 @@ $gtm4wp_defaultoptions = array(
 	GTM4WP_OPTION_EVENTS_EMAILCLICKS => false,
 	GTM4WP_OPTION_EVENTS_FORMMOVE    => true,
 	GTM4WP_OPTION_EVENTS_SOCIAL      => false,
+	GTM4WP_OPTION_EVENTS_YOUTUBE     => false,
+	GTM4WP_OPTION_EVENTS_VIMEO       => false,
+	GTM4WP_OPTION_EVENTS_SOUNDCLOUD  => false,
 	
 	GTM4WP_OPTION_SCROLLER_ENABLED      => false,
 	GTM4WP_OPTION_SCROLLER_DEBUGMODE    => false,
@@ -159,6 +167,7 @@ $gtm4wp_defaultoptions = array(
 	GTM4WP_OPTION_INTEGRATE_WCTRACKCLASSICEC  => false,
 	GTM4WP_OPTION_INTEGRATE_WCTRACKENHANCEDEC => false,
 	GTM4WP_OPTION_INTEGRATE_WCREMARKETING     => false,
+	GTM4WP_OPTION_INTEGRATE_WCREMARKETINGSKU  => false,
 
 	GTM4WP_OPTION_INTEGRATE_WPECOMMERCE => false
 );
