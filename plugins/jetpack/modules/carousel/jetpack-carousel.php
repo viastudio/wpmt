@@ -16,13 +16,13 @@ GNU General Public License for more details.
 */
 class Jetpack_Carousel {
 
-	var $prebuilt_widths = array( 370, 700, 1000, 1200, 1400, 2000 );
+	public $prebuilt_widths = array( 370, 700, 1000, 1200, 1400, 2000 );
 
-	var $first_run = true;
+	public $first_run = true;
 
-	var $in_gallery = false;
+	public $in_gallery = false;
 
-	var $in_jetpack = true;
+	public $in_jetpack = true;
 
 	function __construct() {
 		add_action( 'init', array( $this, 'init' ) );
@@ -78,11 +78,25 @@ class Jetpack_Carousel {
 		return apply_filters( 'jp_carousel_asset_version', $version );
 	}
 
+	function display_bail_message( $output= '' ) {
+		// Displays a message on top of gallery if carousel has bailed
+		$message = '<div class="jp-carousel-msg"><p>';
+		$message .= __( 'Jetpack\'s Carousel has been disabled, because another plugin or your theme is overriding the [gallery] shortcode.', 'jetpack' );
+		$message .= '</p></div>';
+		// put before gallery output
+		$output = $message . $output;
+		return $output;
+	}
+
 	function enqueue_assets( $output ) {
 		if ( ! empty( $output ) && ! apply_filters( 'jp_carousel_force_enable', false ) ) {
 			// Bail because someone is overriding the [gallery] shortcode.
 			remove_filter( 'gallery_style', array( $this, 'add_data_to_container' ) );
 			remove_filter( 'wp_get_attachment_image_attributes', array( $this, 'add_data_to_images' ) );
+			// Display message that carousel has bailed, if user is super_admin
+			if ( is_super_admin() ) {
+				add_filter( 'post_gallery', array( $this, 'display_bail_message' ) );
+			}
 			return $output;
 		}
 
@@ -133,7 +147,7 @@ class Jetpack_Carousel {
 			);
 
 			if ( ! isset( $localize_strings['jetpack_comments_iframe_src'] ) || empty( $localize_strings['jetpack_comments_iframe_src'] ) ) {
-				// We're not using Jetpack comments after all, so fallback to standard local comments.
+				// We're not using Comments after all, so fallback to standard local comments.
 
 				if ( $is_logged_in ) {
 					$localize_strings['local_comments_commenting_as'] = '<p id="jp-carousel-commenting-as">' . sprintf( __( 'Commenting as %s', 'jetpack' ), $current_user->data->display_name ) . '</p>';
@@ -164,7 +178,7 @@ class Jetpack_Carousel {
 			wp_register_style( 'jetpack-carousel-ie8fix', plugins_url( 'jetpack-carousel-ie8fix.css', __FILE__ ), array(), $this->asset_version( '20121024' ) );
 			$GLOBALS['wp_styles']->add_data( 'jetpack-carousel-ie8fix', 'conditional', 'lte IE 8' );
 			wp_enqueue_style( 'jetpack-carousel-ie8fix' );
-	
+
 			/**
 			 * Fires after carousel assets are enqueued for the first time.
 			 * Allows for adding additional assets to the carousel page.
@@ -285,7 +299,7 @@ class Jetpack_Carousel {
 
 		/**
 		 * Allows for the checking of privileges of the blog user before comments
-		 * are packaged as JSON and sent back from the get_attachment_comments 
+		 * are packaged as JSON and sent back from the get_attachment_comments
 		 * AJAX endpoint
 		 *
 		 * @duplicate yes
