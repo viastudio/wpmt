@@ -547,7 +547,9 @@ class GFAPI {
 	public static function update_entries( $entries ) {
 
 		foreach ( $entries as $entry ) {
-			$result = self::update_entry( $entry, $entry['id'] );
+			$entry_id = rgar( $entry, 'id' );
+			GFCommon::log_debug( 'Updating entry ' . $entry_id );
+			$result = self::update_entry( $entry, $entry_id );
 			if ( is_wp_error( $result ) ) {
 				return $result;
 			}
@@ -572,7 +574,9 @@ class GFAPI {
 		global $wpdb;
 
 		if ( empty( $entry_id ) ) {
-			$entry_id = absint( $entry['id'] );
+			if ( rgar( $entry, 'id' ) ) {
+				$entry_id = absint( $entry['id'] );
+			}
 		} else {
 			$entry['id'] = absint( $entry_id );
 		}
@@ -630,8 +634,7 @@ class GFAPI {
 		$transaction_type = isset( $entry['transaction_type'] ) ? intval( $entry['transaction_type'] ) : 'NULL';
 
 		$lead_table = GFFormsModel::get_lead_table_name();
-		$result     = $wpdb->query(
-			$wpdb->prepare(
+		$sql = $wpdb->prepare(
 				"
                 UPDATE $lead_table
                 SET
@@ -656,8 +659,8 @@ class GFAPI {
                 WHERE
                 id = %d
                 ", $form_id, $is_starred, $is_read, $ip, $source_url, $user_agent, $currency, $status, $payment_method, $entry_id
-			)
 		);
+		$result     = $wpdb->query( $sql );
 		if ( false === $result ) {
 			return new WP_Error( 'update_entry_properties_failed', __( 'There was a problem while updating the entry properties', 'gravityforms' ), $wpdb->last_error );
 		}
@@ -787,7 +790,7 @@ class GFAPI {
 		$is_starred     = isset( $entry['is_starred'] ) ? $entry['is_starred'] : 0;
 		$is_read        = isset( $entry['is_read'] ) ? $entry['is_read'] : 0;
 		$ip             = isset( $entry['ip'] ) ? $entry['ip'] : GFFormsModel::get_ip();
-		$source_url     = isset( $entry['source_url'] ) ? $entry['source_url'] : GFFormsModel::get_current_page_url();
+		$source_url     = isset( $entry['source_url'] ) ? $entry['source_url'] : esc_url_raw( GFFormsModel::get_current_page_url() );
 		$user_agent     = isset( $entry['user_agent'] ) ? $entry['user_agent'] : 'API';
 		$currency       = isset( $entry['currency'] ) ? $entry['currency'] : GFCommon::get_currency();
 		$payment_status = isset( $entry['payment_status'] ) ? sprintf( "'%s'", esc_sql( $entry['payment_status'] ) ) : 'NULL';
