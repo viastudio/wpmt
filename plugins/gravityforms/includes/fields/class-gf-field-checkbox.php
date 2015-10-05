@@ -308,7 +308,8 @@ class GF_Field_Checkbox extends GF_Field {
 		foreach ( $lead_field_keys as $input_id ) {
 			//mark as a tick if input label (from form meta) is equal to submitted value (from lead)
 			if ( is_numeric( $input_id ) && absint( $input_id ) == absint( $field_id ) ) {
-				if ( $entry[ $input_id ] == $field_label ) {
+				$sanitized_value = wp_kses( $entry[ $input_id ], wp_kses_allowed_html( 'post' ) );
+				if ( $sanitized_value == $field_label ) {
 					return $entry[ $input_id ];
 				} else {
 					if ( $this->enableChoiceValue || $this->enablePrice ) {
