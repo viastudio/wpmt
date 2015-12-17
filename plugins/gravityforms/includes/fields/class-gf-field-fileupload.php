@@ -191,7 +191,7 @@ class GF_Field_FileUpload extends GF_Field {
 				}
 			}
 
-			$plupload_init = gf_apply_filters( 'gform_plupload_settings', $form_id, $plupload_init, $form_id, $this );
+			$plupload_init = gf_apply_filters( array( 'gform_plupload_settings', $form_id ), $plupload_init, $form_id, $this );
 
 			$drop_files_here_text = esc_html__( 'Drop files here or', 'gravityforms' );
 			$select_files_text    = esc_attr__( 'Select files', 'gravityforms' );
@@ -272,12 +272,12 @@ class GF_Field_FileUpload extends GF_Field {
 					$upload = str_replace( " class='", " class='gform_hidden ", $upload );
 				}
 
-				return "<div class='ginput_container'>" . $upload . " {$preview}</div>";
+				return "<div class='ginput_container ginput_container_fileupload'>" . $upload . " {$preview}</div>";
 			} else {
 
 				$preview = $multiple_files ? sprintf( "<div id='%s'></div>", $file_list_id ) : '';
 
-				return "<div class='ginput_container'>$upload</div>" . $preview;
+				return "<div class='ginput_container ginput_container_fileupload'>$upload</div>" . $preview;
 			}
 		}
 	}
@@ -394,7 +394,7 @@ class GF_Field_FileUpload extends GF_Field {
 				$value = empty( $uploaded_files_arr ) ? '' : sprintf( esc_html__( '%d files', 'gravityforms' ), count( $uploaded_files_arr ) );
 				return $value;
 			} elseif ( $file_count == 1 ) {
-				$value = $uploaded_files_arr[0];
+				$value = current( $uploaded_files_arr );
 			} elseif ( $file_count == 0 ) {
 				return;
 			}
@@ -415,17 +415,20 @@ class GF_Field_FileUpload extends GF_Field {
 		if ( ! empty( $value ) ) {
 			$output_arr = array();
 			$file_paths = $this->multipleFiles ? json_decode( $value ) : array( $value );
-			foreach ( $file_paths as $file_path ) {
-				$info = pathinfo( $file_path );
-				if ( GFCommon::is_ssl() && strpos( $file_path, 'http:' ) !== false ) {
-					$file_path = str_replace( 'http:', 'https:', $file_path );
+
+			if ( is_array( $file_paths ) ) {
+				foreach ( $file_paths as $file_path ) {
+					$info = pathinfo( $file_path );
+					if ( GFCommon::is_ssl() && strpos( $file_path, 'http:' ) !== false ) {
+						$file_path = str_replace( 'http:', 'https:', $file_path );
+					}
+					$file_path          = esc_attr( str_replace( ' ', '%20', $file_path ) );
+					$base_name          = $info['basename'];
+					$click_to_view_text = esc_attr__( 'Click to view', 'gravityforms' );
+					$output_arr[]       = $format == 'text' ? $file_path . PHP_EOL : "<li><a href='{$file_path}' target='_blank' title='{$click_to_view_text}'>{$base_name}</a></li>";
 				}
-				$file_path    = esc_attr( str_replace( ' ', '%20', $file_path ) );
-				$base_name = $info['basename'];
-				$click_to_view_text = esc_attr__( 'Click to view', 'gravityforms' );
-				$output_arr[] = $format == 'text' ? $file_path . PHP_EOL : "<li><a href='{$file_path}' target='_blank' title='{$click_to_view_text}'>{$base_name}</a></li>";
+				$output = join( PHP_EOL, $output_arr );
 			}
-			$output = join( PHP_EOL, $output_arr );
 		}
 		$output = empty( $output ) || $format == 'text' ? $output : sprintf( '<ul>%s</ul>', $output );
 

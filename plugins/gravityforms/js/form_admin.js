@@ -96,14 +96,16 @@ function CreateConditionalLogic(objectType, obj){
     var anySelected = obj.conditionalLogic.logicType == "any" ? "selected='selected'" :"";
 
     var objText;
-    if(objectType == "field")
+    if (obj['type'] == "section")
+        objText = gf_vars.thisSectionIf;
+    else if(objectType == "field")
         objText = gf_vars.thisFieldIf;
     else if(objectType == "page")
         objText = gf_vars.thisPage;
     else if(objectType == "confirmation")
-        objText = gf_vars.thisConfirmation
+        objText = gf_vars.thisConfirmation;
     else if(objectType == "notification")
-        objText = gf_vars.thisNotification
+        objText = gf_vars.thisNotification;
     else
         objText = gf_vars.thisFormButton;
 
@@ -190,16 +192,27 @@ function GetRuleFields( objectType, ruleIndex, selectedFieldId ) {
 
     options = gform.applyFilters( 'gform_conditional_logic_fields', options, form, selectedFieldId );
 
-    // create the actual <option> strings
+    str += GetRuleFieldsOptions( options, selectedFieldId );
+
+    str += "</select>";
+    return str;
+}
+
+function GetRuleFieldsOptions( options, selectedFieldId ){
+    var str = '';
     for( var i = 0; i < options.length; i++ ) {
 
         var option = options[i];
-        var selected = option.value == selectedFieldId ? "selected='selected'" : '';
+        if ( typeof option.options !== 'undefined' ) {
+            str += '<optgroup label=" ' + option.label + '">';
+            str += GetRuleFieldsOptions( option.options, selectedFieldId );
+            str += '</optgroup>';
+        } else {
+            var selected = option.value == selectedFieldId ? "selected='selected'" : '';
 
-        str += "<option value='" + option.value + "' " + selected + ">" + option.label + "</option>";
+            str += "<option value='" + option.value + "' " + selected + ">" + option.label + "</option>";
+        }
     }
-
-    str += "</select>";
     return str;
 }
 
@@ -713,6 +726,12 @@ function ConfirmationObj() {
 
     gaddon.deleteFeed = function (id) {
         $("#single_action").val("delete");
+        $("#single_action_argument").val(id);
+        $("#gform-settings").submit();
+    };
+
+    gaddon.duplicateFeed = function (id) {
+        $("#single_action").val("duplicate");
         $("#single_action_argument").val(id);
         $("#gform-settings").submit();
     };

@@ -123,19 +123,38 @@ class Gravity_Api {
 		return $response_body;
 	}
 
-	/** Retrieves Dropbox API Keys. Requires a valid license */
-	public function get_dropbox_api_key(){
+	/***
+	 * Retrieves API Keys for third party services. Requires a valid license
+	 *
+	 * @param $third_party_name string - Name or the third party service. "Dropbox" is currently the only supported service.
+	 * @return WP_Error|object - If successful, returns the api key.
+	 */
+	public function get_api_key( $third_party_name ){
 
 		$site_keys = $this->ensure_site_registered();
 		if ( empty( $site_keys ) ) {
 			return false;
 		}
 
-		GFCommon::log_debug( __METHOD__ . '() - retrieving dropbox api key' );
+		switch ( $third_party_name ){
 
-		$response = $this->request( 'dropbox/api_key/' . $site_keys['site_key'], array( 'site_secret' => $site_keys['site_secret'] ) );
+			case 'Dropbox' :
 
-		return $this->prepare_response_body( $response );
+				GFCommon::log_debug( __METHOD__ . '() - retrieving dropbox api key' );
+
+				$auth = base64_encode( $site_keys['site_key'] . ':' . $site_keys['site_secret'] );
+
+				$headers = array( 'Authorization' => 'GravityAPI ' . $auth );
+
+				$response = $this->request( 'credentials/dropbox', array(), 'GET', array( 'headers' => $headers ) );
+
+				return $this->prepare_response_body( $response );
+
+			default :
+
+				return new WP_Error( 'unsupported_service_name', 'The provided third party service name: ' . $third_party_name . ' is not supported. ' );
+		}
+
 	}
 
 
@@ -176,7 +195,7 @@ class Gravity_Api {
 		$options = wp_parse_args( $options, array(
 			'method'  => $method,
 			'timeout' => 10,
-			'body'    => json_encode( $body ),
+			'body'    => in_array( $method, array( 'GET', 'DELETE' ) ) ? null : json_encode( $body ),
 			'headers' => array(),
 			'sslverify' => false,
 		) );
@@ -236,7 +255,9 @@ class Gravity_Api {
 				return false;
 			}
 
-			if ( ! $this->add_site( $license_key_md5, true ) ){
+			$result = $this->add_site( $license_key_md5, true );
+
+			if ( ! $result || is_wp_error( $result ) ) {
 				return false;
 			}
 		}

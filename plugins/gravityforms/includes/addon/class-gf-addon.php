@@ -911,7 +911,7 @@ abstract class GFAddOn {
 		?>
 
 		<form id="gform-settings" action="" method="post">
-
+			<?php wp_nonce_field( $this->_slug . '_save_settings', '_' . $this->_slug . '_save_settings_nonce' ) ?>
 			<?php $this->settings( $sections ); ?>
 
 		</form>
@@ -1038,10 +1038,10 @@ abstract class GFAddOn {
 	 */
 	protected function single_setting_label( $field ) {
 
-		echo $field['label'];
+		echo rgar( $field, 'label' );
 
 		if ( isset( $field['tooltip'] ) ) {
-			echo ' ' . gform_tooltip( $field['tooltip'], rgar( $field, 'tooltip_class' ), true );
+			echo $this->maybe_get_tooltip( $field );
 		}
 
 		if ( rgar( $field, 'required' ) ) {
@@ -1310,9 +1310,6 @@ abstract class GFAddOn {
 		$default_value       = rgar( $field, 'value' ) ? rgar( $field, 'value' ) : rgar( $field, 'default_value' );
 		$value               = $this->get_setting( $field['name'], $default_value );
 
-
-		$name    = esc_attr( $field['name'] );
-		$tooltip = isset( $choice['tooltip'] ) ? gform_tooltip( $choice['tooltip'], rgar( $choice, 'tooltip_class' ), true ) : '';
 		$html    = '';
 
 		$html .= '<input
@@ -1365,7 +1362,6 @@ abstract class GFAddOn {
 		$value         = $this->get_setting( $field['name'], $default_value );
 
 		$name    = '' . esc_attr( $field['name'] );
-		$tooltip = isset( $choice['tooltip'] ) ? gform_tooltip( $choice['tooltip'], rgar( $choice, 'tooltip_class' ), true ) : '';
 		$html    = '';
 
 		if ( rgar( $field, 'use_editor' ) && GFCommon::is_wp_version( '3.3' ) ) {
@@ -1448,7 +1444,8 @@ abstract class GFAddOn {
 		$field['type'] = 'checkbox'; //making sure type is set to checkbox
 
 		$field_attributes   = $this->get_field_attributes( $field, array() );
-		$horizontal         = rgar( $field, 'horizontal' ) ? ' gaddon-setting-inline' : '';
+		$have_icon          = $this->choices_have_icon( rgar( $field, 'choices' ) );
+		$horizontal         = rgar( $field, 'horizontal' ) || $have_icon ? ' gaddon-setting-inline' : '';
 
 
 
@@ -1460,12 +1457,17 @@ abstract class GFAddOn {
 				$choice['id']      = sanitize_title( $choice['name'] );
 				$choice_attributes = $this->get_choice_attributes( $choice, $field_attributes, $default_choice_attributes );
 				$value             = $this->get_setting( $choice['name'], rgar( $choice, 'default_value' ) );
-				$tooltip           = isset( $choice['tooltip'] ) ? gform_tooltip( $choice['tooltip'], rgar( $choice, 'tooltip_class' ), true ) : '';
+				$tooltip           = $this->maybe_get_tooltip( $choice );
 
 				//displaying error message after first checkbox item
 				$error_icon = '';
 				if ( $is_first_choice ){
 					$error_icon = $this->field_failed_validation( $field ) ? $this->get_error_icon( $field ) : '';
+				}
+				
+				// Add icon to choice if choices have icon
+				if ( $have_icon ) {
+					$choice['icon'] = rgar( $choice, 'icon' ) ? $choice['icon'] : 'fa-cog';
 				}
 
 				$html .= $this->checkbox_item( $choice, $horizontal, $choice_attributes, $value, $tooltip, $error_icon );
@@ -1494,10 +1496,12 @@ abstract class GFAddOn {
 	 * @return string - The markup of an individual checkbox item
 	 */
 	protected function checkbox_item( $choice, $horizontal_class, $attributes, $value, $tooltip, $error_icon='' ) {
+		
 		$hidden_field_value = $value == '1' ? '1' : '0';
-		$checkbox_item = '
-                    <div id="gaddon-setting-checkbox-choice-' . $choice['id'] . '" class="gaddon-setting-checkbox' . $horizontal_class . '">
-                        <input type=hidden name="_gaddon_setting_' . esc_attr( $choice['name'] ) . '" value="' . $hidden_field_value . '" />';
+		$icon_class         = rgar( $choice, 'icon' ) ? ' gaddon-setting-choice-visual' : '';
+	
+		$checkbox_item  = '<div id="gaddon-setting-checkbox-choice-' . $choice['id'] . '" class="gaddon-setting-checkbox' . $horizontal_class . $icon_class . '">';
+		$checkbox_item .= '<input type=hidden name="_gaddon_setting_' . esc_attr( $choice['name'] ) . '" value="' . $hidden_field_value . '" />';
 
 		if ( is_callable( array( $this, "checkbox_input_{$choice['name']}" ) ) ) {
 			$markup = call_user_func( array( $this, "checkbox_input_{$choice['name']}" ), $choice, $attributes, $value, $tooltip );
@@ -1521,11 +1525,28 @@ abstract class GFAddOn {
 	 * @return string - The markup of an individual checkbox input and its associated label
 	 */
 	protected function checkbox_input( $choice, $attributes, $value, $tooltip ) {
-		$markup = '<input type = "checkbox" ' .
-		          implode( ' ', $attributes ) . ' ' .
-		          checked( $value, '1', false ) .
-		          ' />
-            <label for="' . esc_attr( $choice['id'] ) . '">' . esc_html( $choice['label'] ) . ' ' . $tooltip . '</label>';
+		
+		$icon_tag = '';
+		
+		if ( rgar( $choice, 'icon' ) ) {
+			
+			/* Get the defined icon. */
+			$icon = rgar( $choice, 'icon' ) ? $choice['icon'] : 'fa-cog';
+			
+			/* Set icon tag based on icon type. */
+			if ( filter_var( $icon, FILTER_VALIDATE_URL ) ) {
+				$icon_tag = '<img src="' . esc_attr( $icon ) .'" />';
+			} else {
+				$icon_tag = '<i class="fa ' . esc_attr( $icon ) .'"></i>';
+			}
+			
+			$icon_tag .= '<br />';
+
+		}
+
+		$markup  = '<input type = "checkbox" ' . implode( ' ', $attributes ) . ' ' . checked( $value, '1', false ) . ' />';
+		$markup .= '<label for="' . esc_attr( $choice['id'] ) . '"><span>' . $icon_tag . esc_html( $choice['label'] ) . $tooltip . '</span></label>';
+		
 
 		return $markup;
 	}
@@ -1546,32 +1567,55 @@ abstract class GFAddOn {
 
 		$selected_value   = $this->get_setting( $field['name'], rgar( $field, 'default_value' ) );
 		$field_attributes = $this->get_field_attributes( $field );
-		$horizontal       = rgar( $field, 'horizontal' ) ? ' gaddon-setting-inline' : '';
+		$have_icon        = $this->choices_have_icon( rgar( $field, 'choices' ) );
+		$horizontal       = rgar( $field, 'horizontal' ) || $have_icon ? ' gaddon-setting-inline' : '';
 		$html             = '';
+		
 		if ( is_array( $field['choices'] ) ) {
+			
+			
 			foreach ( $field['choices'] as $i => $choice ) {
+				
 				$choice['id']      = $field['name'] . $i;
 				$choice_attributes = $this->get_choice_attributes( $choice, $field_attributes );
-
-				$tooltip = isset( $choice['tooltip'] ) ? gform_tooltip( $choice['tooltip'], rgar( $choice, 'tooltip_class' ), true ) : '';
-
-				$radio_value = isset( $choice['value'] ) ? $choice['value'] : $choice['label'];
-				$checked     = checked( $selected_value, $radio_value, false );
-				$html .= '
-                        <div id="gaddon-setting-radio-choice-' . $choice['id'] . '" class="gaddon-setting-radio' . $horizontal . '">
-                        <label for="' . esc_attr( $choice['id'] ) . '">
-                            <input
-                                id = "' . esc_attr( $choice['id'] ) . '"
-                                type = "radio" ' .
-				         'name="_gaddon_setting_' . esc_attr( $field['name'] ) . '" ' .
-				         'value="' . $radio_value . '" ' .
-				         implode( ' ', $choice_attributes ) . ' ' .
-				         $checked .
-				         ' /><span>' . esc_html( $choice['label'] ) . ' ' . $tooltip . '</span>
-                        </label>
-                        </div>
-                    ';
+				$tooltip           = $this->maybe_get_tooltip( $choice );
+				$radio_value       = isset( $choice['value'] ) ? $choice['value'] : $choice['label'];
+				$checked           = checked( $selected_value, $radio_value, false );
+				
+				if ( $have_icon ) {
+					
+					/* Get the defined icon. */
+					$icon = rgar( $choice, 'icon' ) ? $choice['icon'] : 'fa-cog';
+					
+					/* Set icon tag based on icon type. */
+					if ( filter_var( $icon, FILTER_VALIDATE_URL ) ) {
+						$icon_tag = '<img src="' . esc_attr( $icon ) .'" />';
+					} else {
+						$icon_tag = '<i class="fa ' . esc_attr( $icon ) .'"></i>';
+					}
+					
+					$html .= '<div id="gaddon-setting-radio-choice-' . $choice['id'] . '" class="gaddon-setting-radio gaddon-setting-choice-visual' . $horizontal . '">';
+	                $html .= '<input id="' . esc_attr( $choice['id'] ) . '" type="radio" name="_gaddon_setting_' . esc_attr( $field['name'] ) . '" ' .
+					         'value="' . $radio_value . '" ' . implode( ' ', $choice_attributes ) . ' ' . $checked . ' />';
+					$html .= '<label for="' . esc_attr( $choice['id'] ) . '">';
+					$html .= '<span>' . $icon_tag . '<br />' . esc_html( $choice['label'] ) . $tooltip . '</span>';
+	                $html .= '</label>';
+	                $html .= '</div>';
+					
+				} else {
+				
+					$html .= '<div id="gaddon-setting-radio-choice-' . $choice['id'] . '" class="gaddon-setting-radio' . $horizontal . '">';
+					$html .= '<label for="' . esc_attr( $choice['id'] ) . '">';
+	                $html .= '<input id="' . esc_attr( $choice['id'] ) . '" type="radio" name="_gaddon_setting_' . esc_attr( $field['name'] ) . '" ' .
+					         'value="' . $radio_value . '" ' . implode( ' ', $choice_attributes ) . ' ' . $checked . ' />';
+					$html .= '<span>' . esc_html( $choice['label'] ) . $tooltip . '</span>';
+	                $html .= '</label>';
+	                $html .= '</div>';
+	                
+				}
+                
 			}
+			
 		}
 
 		if ( $this->field_failed_validation( $field ) ) {
@@ -1583,6 +1627,27 @@ abstract class GFAddOn {
 		}
 
 		return $html;
+	}
+	
+	/**
+	 * Determines if any of the available settings choices have an icon.
+	 * 
+	 * @access public
+	 * @param array $choices (default: array())
+	 * @return bool
+	 */
+	public function choices_have_icon( $choices = array() ) {
+		
+		$have_icon = false;
+		
+		foreach ( $choices as $choice ) {
+			if ( rgar( $choice, 'icon' ) ) {
+				$have_icon = true;
+			}
+		}
+		
+		return $have_icon;
+		
 	}
 
 	/***
@@ -1604,6 +1669,8 @@ abstract class GFAddOn {
 			'<select name="%1$s" %2$s>%3$s</select>',
 			'_gaddon_setting_' . $name, implode( ' ', $attributes ), $this->get_select_options( $field['choices'], $value )
 		);
+		
+		$html .= rgar( $field, 'after_select' );
 
 		if ( $this->field_failed_validation( $field ) ) {
 			$html .= $this->get_error_icon( $field );
@@ -1635,6 +1702,7 @@ abstract class GFAddOn {
 		/* Prepare input field */
 		$input_field          = $field;
 		$input_field['name'] .= '_custom';
+		$input_field['style'] = 'width:200px;max-width:90%;';
 		$input_field_display  = '';
 
 		/* Loop through select choices and make sure option for custom exists */
@@ -1752,12 +1820,13 @@ abstract class GFAddOn {
 			}
 
 			$child_field['name'] = $this->get_mapped_field_name( $field, $child_field['name'] );
-			$required            = rgar( $child_field, 'required' ) ? $this->get_required_indicator( $child_field ) : '';
+			$tooltip             = $this->maybe_get_tooltip( $child_field );
+			$required            = rgar( $child_field, 'required' ) ? ' ' . $this->get_required_indicator( $child_field ) : '';
 
 			$html .= '
                 <tr>
                     <td>
-                        <label for="' . $child_field['name'] . '">' . $child_field['label'] . ' ' . $required . '<label>
+                        <label for="' . $child_field['name'] . '">' . $child_field['label'] . $tooltip . $required . '<label>
                     </td>
                     <td>' .
 			         $this->settings_field_map_select( $child_field, $form_id ) .
@@ -1787,8 +1856,8 @@ abstract class GFAddOn {
 
 	public function settings_field_map_select( $field, $form_id ) {
 
-		$field_type          = ( isset( $field['field_type'] ) ) ? $field['field_type'] : null;
-		$exclude_field_types = ( isset( $field['exclude_field_types'] ) ? $field['exclude_field_types'] : null );
+		$field_type          = rgempty( 'field_type', $field ) ? null : $field['field_type'];
+		$exclude_field_types = rgempty( 'exclude_field_types', $field ) ? null : $field['exclude_field_types'];
 
 		$field['choices'] = $this->get_field_map_choices( $form_id, $field_type, $exclude_field_types );
 
@@ -1835,19 +1904,18 @@ abstract class GFAddOn {
 
 		$fields[] = array( 'value' => '', 'label' => $first_choice_label );
 
-		// Adding default fields
+		// if field types not restricted add the default fields and entry meta
 		if ( is_null( $field_type ) ) {
 			$fields[] = array( 'value' => 'id', 'label' => esc_html__( 'Entry ID', 'gravityforms' ) );
 			$fields[] = array( 'value' => 'date_created', 'label' => esc_html__( 'Entry Date', 'gravityforms' ) );
 			$fields[] = array( 'value' => 'ip', 'label' => esc_html__( 'User IP', 'gravityforms' ) );
 			$fields[] = array( 'value' => 'source_url', 'label' => esc_html__( 'Source Url', 'gravityforms' ) );
 			$fields[] = array( 'value' => 'form_title', 'label' => esc_html__( 'Form Title', 'gravityforms' ) );
-		}
 
-		// Populate entry meta
-		$entry_meta = GFFormsModel::get_entry_meta( $form['id'] );
-		foreach ( $entry_meta as $meta_key => $meta ) {
-			$fields[] = array( 'value' => $meta_key, 'label' => rgars( $entry_meta, "{$meta_key}/label" ) );
+			$entry_meta = GFFormsModel::get_entry_meta( $form['id'] );
+			foreach ( $entry_meta as $meta_key => $meta ) {
+				$fields[] = array( 'value' => $meta_key, 'label' => rgars( $entry_meta, "{$meta_key}/label" ) );
+			}
 		}
 
 		// Populate form fields
@@ -2314,7 +2382,7 @@ abstract class GFAddOn {
 			$select_field['name'] . 'Span',
 			$is_enabled ? '' : 'hidden',
 			$this->settings_select( $select_field, false ),
-			$select_field['tooltip'] ? gform_tooltip( $select_field['tooltip'], rgar( $select_field, 'tooltip_class' ) . ' tooltip ' . $select_field['name'], true ) : ''
+			$this->maybe_get_tooltip( $select_field )
 		);
 
 		if ( $echo ) {
@@ -2464,7 +2532,7 @@ abstract class GFAddOn {
 			array(
 				'default_value', 'label', 'choices', 'feedback_callback', 'checked', 'checkbox_label', 'value', 'type',
 				'validation_callback', 'required', 'hidden', 'tooltip', 'dependency', 'messages', 'name', 'args', 'exclude_field_types',
-				'field_type', 'after_input', 'input_type'
+				'field_type', 'after_input', 'input_type', 'icon'
 			), $field
 		);
 
@@ -2757,6 +2825,23 @@ abstract class GFAddOn {
 	}
 
 	/**
+	 * Returns the tooltip markup if a tooltip is configured for the supplied item (field/child field/choice).
+	 *
+	 * @param array $item The item properties.
+	 *
+	 * @return string
+	 */
+	public function maybe_get_tooltip( $item ) {
+		$html = '';
+
+		if ( isset( $item['tooltip'] ) ) {
+			$html = ' ' . gform_tooltip( $item['tooltip'], rgar( $item, 'tooltip_class' ), true );
+		}
+
+		return $html;
+	}
+
+	/**
 	 * Gets the required indicator
 	 * Gets the markup of the required indicator symbol to highlight fields that are required
 	 *
@@ -2977,7 +3062,7 @@ abstract class GFAddOn {
 			$form = $this->get_current_form();
 
 			$form_id = $form['id'];
-			$form    = gf_apply_filters( 'gform_admin_pre_render', $form_id, $form );
+			$form    = gf_apply_filters( array( 'gform_admin_pre_render', $form_id ), $form );
 
 			if ( $this->method_is_overridden( 'form_settings' ) ) {
 
@@ -3036,6 +3121,13 @@ abstract class GFAddOn {
 	public function maybe_save_form_settings( $form ) {
 
 		if ( $this->is_save_postback() ) {
+
+			check_admin_referer( $this->_slug . '_save_settings', '_' . $this->_slug . '_save_settings_nonce' );
+
+			if ( ! $this->current_user_can_any( $this->_capabilities_form_settings ) ) {
+				GFCommon::add_error_message( esc_html__( "You don't have sufficient permissions to update the form settings.", 'gravityforms' ) );
+				return false;
+			}
 
 			// store a copy of the previous settings for cases where action would only happen if value has changed
 			$this->set_previous_settings( $this->get_form_settings( $form ) );
@@ -3224,7 +3316,9 @@ abstract class GFAddOn {
 		$menu_position = apply_filters( 'gform_app_menu_position_' . $this->_slug, $menu_position );
 		$this->app_hook_suffix = add_menu_page( $this->get_short_title(), $this->get_short_title(), $has_full_access ? 'gform_full_access' : $min_cap, $parent_menu['name'], $callback, $this->get_app_menu_icon(), $menu_position );
 
-		add_action( "load-$this->app_hook_suffix", array( $this, 'load_screen_options' ) );
+		if ( method_exists( $this, 'load_screen_options' ) ) {
+			add_action( "load-$this->app_hook_suffix", array( $this, 'load_screen_options' ) );
+		}
 
 		// Adding submenu pages
 		foreach ( $menu_items as $menu_item ) {
@@ -3316,7 +3410,7 @@ abstract class GFAddOn {
 	 *     );
 	 * add_screen_option( 'per_page', $args );
 	 */
-	protected function load_screen_options() {
+	public function load_screen_options() {
 	}
 
 	/**
@@ -3373,7 +3467,13 @@ abstract class GFAddOn {
 				if ( isset( $tab['permission'] ) && ! $this->current_user_can_any( $tab['permission'] ) ) {
 					wp_die( esc_html__( "You don't have adequate permission to view this page", 'gravityforms' ) );
 				}
-				$title = isset( $tab['label'] ) ? $tab['label'] : $tab['name'];
+
+				$title = rgar( $tab,'title' );
+
+				if ( empty( $title ) ) {
+					$title = isset( $tab['label'] ) ? $tab['label'] : $tab['name'];
+				}
+
 				$this->app_tab_page_header( $tabs, $current_tab, $title, '' );
 				call_user_func( $tab['callback'] );
 				$this->app_tab_page_footer();
@@ -3570,7 +3670,14 @@ abstract class GFAddOn {
 
 		if ( $this->is_save_postback() ) {
 
-			// store a copy of the previous settings for cases where action whould only happen if value has changed
+			check_admin_referer( $this->_slug . '_save_settings', '_' . $this->_slug . '_save_settings_nonce' );
+
+			if ( ! $this->current_user_can_any( $this->_capabilities_settings_page ) ) {
+				GFCommon::add_error_message( esc_html__( "You don't have sufficient permissions to update the settings.", 'gravityforms' ) );
+				return false;
+			}
+
+			// store a copy of the previous settings for cases where action would only happen if value has changed
 			$this->set_previous_settings( $this->get_plugin_settings() );
 
 			$settings = $this->get_posted_settings();
@@ -3854,6 +3961,13 @@ abstract class GFAddOn {
 	protected function maybe_save_app_settings() {
 
 		if ( $this->is_save_postback() ) {
+
+			check_admin_referer( $this->_slug . '_save_settings', '_' . $this->_slug . '_save_settings_nonce' );
+
+			if ( ! $this->current_user_can_any( $this->_capabilities_app_settings ) ) {
+				GFCommon::add_error_message( esc_html__( "You don't have sufficient permissions to update the settings.", 'gravityforms' ) );
+				return false;
+			}
 
 			// store a copy of the previous settings for cases where action would only happen if value has changed
 			$this->set_previous_settings( $this->get_app_settings() );
@@ -4321,7 +4435,8 @@ abstract class GFAddOn {
 		/* Get Add-On slug */
 		$slug = str_replace( 'gravityforms', '', $this->_slug );
 
-		return gf_apply_filters( "gform_{$slug}_field_value", array(
+		return gf_apply_filters( array(
+			"gform_{$slug}_field_value",
 			$form['id'],
 			$field_id
 		), $field_value, $form, $entry, $field_id );
@@ -4717,7 +4832,7 @@ abstract class GFAddOn {
 	}
 
 	protected function is_entry_list() {
-		if ( rgget( 'page' ) == 'gf_entries' && rgempty( 'view', $_GET ) ) {
+		if ( rgget( 'page' ) == 'gf_entries' && ( rgget( 'view' ) == 'entries' || rgempty( 'view', $_GET ) ) ) {
 			return true;
 		}
 

@@ -31,8 +31,8 @@ if ( class_exists( 'GFForms' ) ) {
 		protected $_path = 'gravityformswebapi/webapi.php';
 		protected $_full_path = __FILE__;
 		protected $_url = 'http://www.gravityforms.com';
-		protected $_title = 'Gravity Forms API';
-		protected $_short_title = 'API';
+		protected $_title = 'Gravity Forms Web API';
+		protected $_short_title = 'Web API';
 
 		private $_enabled;
 		private $_private_key;
@@ -797,7 +797,7 @@ if ( class_exists( 'GFForms' ) ) {
 				$this->die_bad_request();
 			}
 
-			$field_values = isset( $data['field_values'] ) ? $data['target_page'] : array();
+			$field_values = isset( $data['field_values'] ) ? $data['field_values'] : array();
 			$target_page  = isset( $data['target_page'] ) ? $data['target_page'] : 0;
 			$source_page  = isset( $data['source_page'] ) ? $data['source_page'] : 1;
 
