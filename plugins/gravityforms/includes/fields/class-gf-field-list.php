@@ -58,9 +58,9 @@ class GF_Field_List extends GF_Field {
 		$shim_style  = is_rtl() ? 'position:absolute;left:999em;' : 'position:absolute;left:-999em;';
 		$label_target_shim = sprintf( '<input type=\'text\' id=\'input_%1$s_%2$s_shim\' style=\'%3$s\' onfocus=\'jQuery( "#field_%1$s_%2$s table tr td:first-child input" ).focus();\' />', $form_id, $this->id, $shim_style );
 
-		$list = "<div class='ginput_container ginput_list'>" .
+		$list = "<div class='ginput_container ginput_container_list ginput_list'>" .
 			$label_target_shim .
-			"<table class='gfield_list'>";
+			"<table class='gfield_list gfield_list_container'>";
 
 		$class_attr = '';
 		if ( $has_columns ) {
@@ -101,14 +101,16 @@ class GF_Field_List extends GF_Field {
 
 			$odd_even = ( $rownum % 2 ) == 0 ? 'even' : 'odd';
 
-			$list .= "<tr class='gfield_list_row_{$odd_even}'>";
+			$list .= "<tr class='gfield_list_row_{$odd_even} gfield_list_group'>";
 			$colnum = 1;
 			foreach ( $columns as $column ) {
+				$data_label = '';
 
 				//getting value. taking into account columns being added/removed from form meta
 				if ( is_array( $item ) ) {
 					if ( $has_columns ) {
 						$val = rgar( $item, $column['text'] );
+						$data_label = "data-label='" . esc_attr( $column['text'] ) . "'";
 					} else {
 						$vals = array_values( $item );
 						$val  = rgar( $vals, 0 );
@@ -117,7 +119,7 @@ class GF_Field_List extends GF_Field {
 					$val = $colnum == 1 ? $item : '';
 				}
 
-				$list .= "<td class='gfield_list_cell gfield_list_{$this->id}_cell{$colnum}'>" . $this->get_list_input( $has_columns, $column, $val, $form_id ) . '</td>';
+				$list .= "<td class='gfield_list_cell gfield_list_{$this->id}_cell{$colnum}' {$data_label}>" . $this->get_list_input( $has_columns, $column, $val, $form_id ) . '</td>';
 				$colnum ++;
 			}
 
@@ -208,7 +210,8 @@ class GF_Field_List extends GF_Field {
 		}
 		$input_info = array( 'type' => 'text' );
 
-		$input_info = gf_apply_filters( 'gform_column_input', array(
+		$input_info = gf_apply_filters( array(
+			'gform_column_input',
 			$form_id,
 			$this->id,
 			$column_index
@@ -245,7 +248,8 @@ class GF_Field_List extends GF_Field {
 				break;
 		}
 
-		return gf_apply_filters( 'gform_column_input_content', array(
+		return gf_apply_filters( array(
+			'gform_column_input_content',
 			$form_id,
 			$this->id,
 			$column_index

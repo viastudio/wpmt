@@ -78,10 +78,6 @@ table.xwidefat {
 	width: 99% !important;
 }
 
-div.wrap {
-	position: relative;
-}
-
 .hr-divider {
 	background-color: #FFF;
 	height: 1px;
@@ -1560,6 +1556,62 @@ ul#form_autoresponder_container li label {
 #confirmation_list_form .check-column,
 #notification_list_form .check-column {
     width:50px;
+}
+
+.gform-notification-service {
+	display: inline-block;
+	margin-bottom: 5px;
+	text-align: center;
+}
+
+.gform-notification-service input:checked + label > span{
+    -webkit-filter: none;
+    -moz-filter: none;
+    filter: none;
+}
+
+t.gform-notification-service input:checked + label {
+    background-color:white;
+    border: 1px solid #CCCCCC;
+}
+
+.gform-notification-service label > span {
+    background-repeat:no-repeat;
+    display:inline-block;
+    -webkit-transition: all 100ms ease-in;
+    -moz-transition: all 100ms ease-in;
+    transition: all 100ms ease-in;
+    -webkit-filter: brightness(1.8) grayscale(1) opacity(.5);
+    -moz-filter: brightness(1.8) grayscale(1) opacity(.5);
+    filter: brightness(1.8) grayscale(1) opacity(.5);
+}
+
+.gform-notification-service input{
+    display:none;
+}
+
+.gform-notification-service label > span{
+    padding-top:5px;
+    width:130px;
+    height:65px;
+}
+
+.gform-notification-service label > span > img{
+    width:32px;
+    height:32px;
+    margin:5px;
+    vertical-align:middle;
+}
+
+.gform-notification-service label{
+    border:1px solid #EEEEEE;
+    background-color:#F9F9F9;
+}
+
+.gform-notification-service input:not([disabled]):not([checked]) + label > span:hover{
+    -webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);
+    -moz-filter: brightness(1.2) grayscale(.5) opacity(.9);
+    filter: brightness(1.2) grayscale(.5) opacity(.9);
 }
 
 /* set some widths and heights ------------------------------------------------------*/
@@ -4339,9 +4391,11 @@ textarea#gfield_bulk_add_input {
 	height: 290px;
 }
 
+/** remove soon; temporarily commenting out for record if removal causes issues
 #TB_ajaxContent {
 	height: 400px !important;
 }
+**/
 
 div.wrap.gf_browser_ie .ginput_complex .ginput_cardinfo_right input.ginput_card_security_code {
 	top: 0;
